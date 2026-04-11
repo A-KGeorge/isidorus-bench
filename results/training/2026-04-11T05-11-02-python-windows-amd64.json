@@ -1,0 +1,61 @@
+{
+  "runtime": "tensorflow-python",
+  "runtimeVersion": "2.21.0",
+  "model": "Conv2D(32,3,relu,SAME) \u2192 Conv2D(64,3,relu,SAME) \u2192 Conv2D(64,3,relu,VALID,s2) \u2192 Flatten \u2192 Dense(128,relu) \u2192 Dense(10,softmax)",
+  "optimizer": "adam",
+  "lr": 0.001,
+  "warmupSteps": 5,
+  "benchSteps": 50,
+  "batches": [
+    {
+      "batchSize": 1,
+      "latency": {
+        "mean": 11.816341998055577,
+        "p50": 11.320000048726797,
+        "p95": 11.592599912546575,
+        "p99": 11.697100009769201,
+        "min": 10.463700047694147,
+        "max": 40.6385000096634
+      },
+      "stepsPerSec": 84.62855934303134,
+      "samplesPerSec": 84.62855934303134,
+      "lastLoss": 0.0
+    },
+    {
+      "batchSize": 8,
+      "latency": {
+        "mean": 17.5667820032686,
+        "p50": 16.943400027230382,
+        "p95": 17.60729996021837,
+        "p99": 18.09599995613098,
+        "min": 16.32289995905012,
+        "max": 46.582299983128905
+      },
+      "stepsPerSec": 56.925622451165665,
+      "samplesPerSec": 455.4049796093253,
+      "lastLoss": 8.046620223467471e-07
+    },
+    {
+      "batchSize": 32,
+      "latency": {
+        "mean": 42.658896003849804,
+        "p50": 39.55440002027899,
+        "p95": 54.77090005297214,
+        "p99": 57.80680000316352,
+        "min": 36.790499929338694,
+        "max": 69.81030001770705
+      },
+      "stepsPerSec": 23.441769330124103,
+      "samplesPerSec": 750.1366185639713,
+      "lastLoss": 1.2345473805908114e-05
+    }
+  ],
+  "machineInfo": {
+    "platform": "Windows",
+    "arch": "AMD64",
+    "pythonVersion": "3.12.10",
+    "cpus": 24,
+    "cpuModel": "AMD64 Family 25 Model 33 Stepping 0, AuthenticAMD"
+  },
+  "timestamp": "2026-04-11T05:11:02.261688+00:00"
+}

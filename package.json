@@ -1,0 +1,26 @@
+{
+  "name": "isidorus-bench",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "bench:conv2d": "node --import tsx benchmarks/conv2d/run.ts",
+    "bench:conv2d:quick": "BENCH_ITERS=50 WARMUP_ITERS=10 node --import tsx benchmarks/conv2d/run.ts",
+    "bench:pool": "node --import tsx benchmarks/inference_pool/run.ts",
+    "bench:memory": "node --expose-gc --import tsx benchmarks/memory/run.ts",
+    "bench:memory:quick": "TOTAL_ITERS=1000 node --expose-gc --import tsx benchmarks/memory/run.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@isidorus/core": "^0.0.0-alpha.3",
+    "@isidorus/cpu": "^0.0.0-alpha.10",
+    "@tensorflow/tfjs-node": "^4.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "generated_by": "bench/generate_models.ts",
+  "models": {
+    "small": {
+      "frozen_pb": "bench_small.pb",
+      "savedmodel_dir": null,
+      "input_op": "inputs",
+      "input_shape": [
+        1,
+        224,
+        224,
+        3
+      ],
+      "params": 3154232,
+      "estimated_fp32_mb": 12.03,
+      "description": "MobileNetV2 224x224x3"
+    },
+    "medium": {
+      "frozen_pb": "bench_medium.pb",
+      "savedmodel_dir": null,
+      "input_op": "inputs",
+      "input_shape": [
+        1,
+        224,
+        224,
+        3
+      ],
+      "params": 2073064,
+      "estimated_fp32_mb": 7.91,
+      "description": "ResNet50 224x224x3"
+    },
+    "large": {
+      "frozen_pb": "bench_large.pb",
+      "savedmodel_dir": null,
+      "input_op": "inputs",
+      "input_shape": [
+        1,
+        4096
+      ],
+      "params": 44002280,
+      "estimated_fp32_mb": 167.86,
+      "description": "Dense stack ~44M params"
+    }
+  }
+}
