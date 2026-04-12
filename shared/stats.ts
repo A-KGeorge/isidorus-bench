@@ -1,6 +1,12 @@
 import os from "node:os";
 import { performance } from "node:perf_hooks";
-import type { IterStats, MachineInfo, BatchResult } from "./types.js";
+import { existsSync, readFileSync } from "node:fs";
+import type {
+  IterStats,
+  MachineInfo,
+  BatchResult,
+  BenchmarkSuite,
+} from "./types.js";
 
 // ─── Statistics ─────────────────────────────────────────────────────────────
 
@@ -286,4 +292,74 @@ export function printEventLoopHealth(label: string, h: EventLoopHealth): void {
       `  p99=${h.p99StallMs.toFixed(1)}ms  max=${h.maxStallMs.toFixed(1)}ms` +
       `  stalled=${(h.stallFraction * 100).toFixed(0)}%  ${grade}`,
   );
+}
+
+// ─── Result merging ──────────────────────────────────────────────────────────
+// Instead of overwriting previous results, merge new results with existing ones.
+// For profiled benchmarks, keep results from different profiles. For runtime
+// results, replace results for the same runtime (identified by runtime name).
+
+export interface MergeOptions {
+  /** Path to the existing JSON file (if it exists). */
+  filePath: string;
+  /** New suite to merge. */
+  newSuite: BenchmarkSuite;
+  /** Optional profile name to track (e.g., 'latency', 'throughput'). */
+  profile?: string;
+}
+
+export function mergeResults(options: MergeOptions): BenchmarkSuite {
+  const { filePath, newSuite, profile } = options;
+
+  // If the file doesn't exist, just return the new suite as-is
+  if (!existsSync(filePath)) {
+    return newSuite;
+  }
+
+  // Read existing suite
+  let existing: BenchmarkSuite;
+  try {
+    const content = readFileSync(filePath, "utf-8");
+    existing = JSON.parse(content);
+  } catch {
+    // If parsing fails, just return the new suite
+    return newSuite;
+  }
+
+  // Build a map of existing results by runtime name for easy lookup
+  const existingResultsMap = new Map(
+    existing.results.map((r) => [r.runtime, r]),
+  );
+
+  // Merge results: replace old results for the same runtime, keep others
+  const mergedResults = [];
+
+  // Add all existing results, replacing those with matching runtime
+  for (const existingResult of existing.results) {
+    const newResult = newSuite.results.find(
+      (r) => r.runtime === existingResult.runtime,
+    );
+    if (newResult) {
+      // Replace with new result for this runtime
+      mergedResults.push(newResult);
+    } else {
+      // Keep existing result if there's no new result for this runtime
+      mergedResults.push(existingResult);
+    }
+  }
+
+  // Add any new results that don't have a corresponding existing result
+  for (const newResult of newSuite.results) {
+    if (!existingResultsMap.has(newResult.runtime)) {
+      mergedResults.push(newResult);
+    }
+  }
+
+  // Merge comparisons - just use the new ones since they're computed
+  // from the results anyway
+  return {
+    ...existing,
+    ...newSuite,
+    results: mergedResults,
+  };
 }

@@ -11,11 +11,11 @@
  *   BENCH_ITERS=50 WARMUP_ITERS=10 node --import tsx benchmarks/conv2d/run.ts
  */
 
-import { writeFileSync, mkdirSync, rmSync, readdirSync } from "node:fs";
+import { writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { printSpeedupTable } from "../../shared/stats.js";
+import { printSpeedupTable, mergeResults } from "../../shared/stats.js";
 import type { BenchmarkSuite, SpeedupEntry } from "../../shared/types.js";
 
 import { runIsidorusBench } from "./isidorus.js";
@@ -84,21 +84,14 @@ const suite: BenchmarkSuite = {
 const resultsDir = join(REPO_ROOT, "results", "conv2d");
 mkdirSync(resultsDir, { recursive: true });
 
-// Clean up old benchmark files before saving new ones
-try {
-  const files = readdirSync(resultsDir);
-  // Delete only TypeScript-generated benchmark files (those without -python suffix)
-  for (const file of files) {
-    if (file.endsWith(".json") && !file.includes("-python")) {
-      const filePath = join(resultsDir, file);
-      rmSync(filePath);
-    }
-  }
-} catch {
-  // Directory might not exist yet, that's fine
-}
-
 const filename = "conv2d.json";
-const outPath = join(resultsDir, filename);
-writeFileSync(outPath, JSON.stringify(suite, null, 2));
+const filePath = join(resultsDir, filename);
+
+// Merge new results with existing ones instead of overwriting
+const mergedSuite = mergeResults({
+  filePath,
+  newSuite: suite,
+});
+
+writeFileSync(filePath, JSON.stringify(mergedSuite, null, 2));
 console.log(`Results saved → results/conv2d/${filename}`);

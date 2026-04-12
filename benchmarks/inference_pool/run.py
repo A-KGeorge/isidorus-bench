@@ -367,15 +367,8 @@ def main():
     import datetime
     from datetime import timezone
     plat        = f"{platform.system().lower()}-{platform.machine().lower()}"
-    results_dir = Path(__file__).parent.parent.parent / "results" / "tf_python" / model_name
+    results_dir = Path(__file__).parent.parent.parent / "results" / "inference_pool" / model_name
     results_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Clean up old Python-generated benchmark files (keep TypeScript ones)
-    try:
-        for file in results_dir.glob("*.json"):
-            file.unlink()
-    except:
-        pass  # Directory might not exist yet
     
     out_path    = results_dir / "inference_pool.json"
 
@@ -406,8 +399,54 @@ def main():
         "coldStartMs":   cold_start_ms,
     }
 
-    out_path.write_text(json.dumps(result, indent=2))
-    print(f"Results saved → results/tf_python/{model_name}/{out_path.name}")
+    # Merge with existing results if file exists
+    existing_data = None
+    if out_path.exists():
+        try:
+            with open(out_path, 'r') as f:
+                existing_data = json.load(f)
+        except:
+            existing_data = None
+
+    if existing_data and isinstance(existing_data, dict) and "results" in existing_data:
+        # This is a suite file, merge results
+        new_suite = {
+            "name": "inference_pool",
+            "description": f"Worker-pool throughput benchmark — {Path(model_path).name}",
+            "results": [result],
+        }
+        
+        # Build map of existing results by runtime
+        existing_results_map = {r.get("runtime"): r for r in existing_data.get("results", [])}
+        
+        # Replace result for this runtime, keep others
+        merged_results = []
+        for runtime_key, existing_result in existing_results_map.items():
+            if existing_result.get("runtime") == result["runtime"]:
+                merged_results.append(result)
+            else:
+                merged_results.append(existing_result)
+        
+        # Add new result if it's not already included (by runtime)
+        if not any(r.get("runtime") == result["runtime"] for r in merged_results):
+            merged_results.append(result)
+        
+        merged_data = {
+            **existing_data,
+            "results": merged_results,
+        }
+        out_path.write_text(json.dumps(merged_data, indent=2))
+    else:
+        # Create new suite file
+        suite = {
+            "name": "inference_pool",
+            "description": f"Worker-pool throughput benchmark — {Path(model_path).name}",
+            "results": [result],
+            "comparisons": [],
+        }
+        out_path.write_text(json.dumps(suite, indent=2))
+
+    print(f"Results saved → results/inference_pool/{model_name}/{out_path.name}")
 
 
 if __name__ == "__main__":

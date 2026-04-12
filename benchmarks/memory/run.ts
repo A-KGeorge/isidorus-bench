@@ -28,13 +28,13 @@
  */
 
 import { performance } from "node:perf_hooks";
-import { writeFileSync, mkdirSync, rmSync, readdirSync } from "node:fs";
+import { writeFileSync, mkdirSync } from "node:fs";
 import { join, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import { availableParallelism } from "node:os";
 
 import { InferencePool } from "@isidorus/cpu";
-import { machineInfo } from "../../shared/stats.js";
+import { machineInfo, mergeResults } from "../../shared/stats.js";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const REPO_ROOT = join(__dirname, "..", "..");
@@ -327,47 +327,54 @@ const modelName = basename(MODEL_PATH).replace(/\.[^/.]+$/, "");
 const outDir = join(REPO_ROOT, "results", "memory", modelName);
 mkdirSync(outDir, { recursive: true });
 
-// Clean up old TypeScript-generated benchmark files (those without -python suffix)
-try {
-  const files = readdirSync(outDir);
-  for (const file of files) {
-    if (file.endsWith(".json") && !file.includes("-python")) {
-      const filePath = join(outDir, file);
-      rmSync(filePath);
-    }
-  }
-} catch {
-  // Directory might not exist yet, that's fine
-}
-
 const filename = `memory.json`;
-const result = {
-  model: basename(MODEL_PATH),
-  inputShape: resolved,
-  warmupIters: WARMUP_ITERS,
-  totalIters: TOTAL_ITERS,
-  sampleEvery: SAMPLE_EVERY,
-  concurrency: CONCURRENCY,
-  wallMs,
-  baseline: {
-    heapUsed: baseline.heapUsed,
-    external: baseline.external,
-    rss: baseline.rss,
-  },
-  samples,
-  regression: {
-    window: `iterations ${samples[splitAt]?.iteration ?? 0}–${TOTAL_ITERS}`,
-    heapSlope: slopeHeap,
-    extSlope: slopeExt,
-    rssSlope: slopeRss,
-    threshold: LEAK_THRESHOLD_BYTES_PER_ITER,
-    clean: isClean,
-  },
-  machineInfo: machineInfo(),
-  timestamp: new Date().toISOString(),
+const filePath = join(outDir, filename);
+
+// Create a suite-like structure for consistency with other benchmarks
+const normalizedInputShape = resolved.map((d) => d ?? 1);
+const suite = {
+  name: "memory",
+  description: `Memory leak profile — ${basename(MODEL_PATH)}`,
+  results: [
+    {
+      runtime: "@isidorus/cpu (InferencePool)",
+      runtimeVersion: "latest",
+      model: basename(MODEL_PATH),
+      inputShape: normalizedInputShape,
+      warmupIters: WARMUP_ITERS,
+      benchIters: TOTAL_ITERS,
+      batches: [], // memory benchmark doesn't use batches
+      machineInfo: machineInfo(),
+      timestamp: new Date().toISOString(),
+      durationMs: wallMs,
+      memoryProfile: {
+        baseline: {
+          heapUsed: baseline.heapUsed,
+          external: baseline.external,
+          rss: baseline.rss,
+        },
+        samples,
+        regression: {
+          window: `iterations ${samples[splitAt]?.iteration ?? 0}–${TOTAL_ITERS}`,
+          heapSlope: slopeHeap,
+          extSlope: slopeExt,
+          rssSlope: slopeRss,
+          threshold: LEAK_THRESHOLD_BYTES_PER_ITER,
+          clean: isClean,
+        },
+      },
+    },
+  ],
+  comparisons: [],
 };
 
-writeFileSync(join(outDir, filename), JSON.stringify(result, null, 2));
+// Merge new results with existing ones instead of overwriting
+const mergedSuite = mergeResults({
+  filePath,
+  newSuite: suite,
+});
+
+writeFileSync(filePath, JSON.stringify(mergedSuite, null, 2));
 console.log(`\n  Results saved → results/memory/${modelName}/${filename}`);
 
 process.exit(isClean ? 0 : 1);

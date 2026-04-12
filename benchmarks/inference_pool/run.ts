@@ -41,6 +41,7 @@ import {
   printEventLoopHealth,
   fmtMs,
   fmtTps,
+  mergeResults,
 } from "../../shared/stats.js";
 import type { BenchmarkSuite, SpeedupEntry } from "../../shared/types.js";
 import { runTfjsNodePoolBench } from "./tfjs_node.js";
@@ -214,6 +215,7 @@ const isidorusResult = {
   runtime: "@isidorus/cpu (InferencePool tf-parallel)",
   runtimeVersion: "latest",
   model: basename(modelPath),
+  profile,
   inputShape: resolvedShape,
   warmupIters: WARMUP_REQUESTS,
   benchIters: BENCH_REQUESTS,
@@ -348,20 +350,8 @@ const resultsDir = join(REPO_ROOT, "results", "inference_pool", modelName);
 
 mkdirSync(resultsDir, { recursive: true });
 
-// Clean up old TypeScript-generated benchmark files (those without -python suffix)
-try {
-  const files = readdirSync(resultsDir);
-  for (const file of files) {
-    if (file.endsWith(".json") && !file.includes("-python")) {
-      const filePath = join(resultsDir, file);
-      rmSync(filePath);
-    }
-  }
-} catch {
-  // Directory might not exist yet, that's fine
-}
-
 const filename = `inference_pool.json`;
+const filePath = join(resultsDir, filename);
 
 const suite: BenchmarkSuite = {
   name: "inference_pool",
@@ -370,5 +360,12 @@ const suite: BenchmarkSuite = {
   comparisons,
 };
 
-writeFileSync(join(resultsDir, filename), JSON.stringify(suite, null, 2));
+// Merge new results with existing ones instead of overwriting
+const mergedSuite = mergeResults({
+  filePath,
+  newSuite: suite,
+  profile,
+});
+
+writeFileSync(filePath, JSON.stringify(mergedSuite, null, 2));
 console.log(`Results saved → results/inference_pool/${modelName}/${filename}`);

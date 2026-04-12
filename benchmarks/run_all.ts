@@ -1,8 +1,18 @@
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { rmSync } from "node:fs";
 
 const ROOT = join(fileURLToPath(import.meta.url), "../..");
+
+// Clean up all previous results before starting
+const resultsDir = join(ROOT, "results");
+try {
+  rmSync(resultsDir, { recursive: true, force: true });
+  console.log("Cleaned up previous results directory");
+} catch {
+  // Directory might not exist yet, that's fine
+}
 
 const MODELS = [
   "bench/models/bench_small.pb",

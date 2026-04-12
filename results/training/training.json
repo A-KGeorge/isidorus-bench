@@ -1,13 +1,13 @@
 {
   "name": "training",
-  "description": "Training throughput — Conv2D(32,3,relu,SAME) → Conv2D(64,3,relu,SAME) → Conv2D(64,3,relu,VALID,s2) → Flatten → Dense(128,relu) → Dense(10,softmax)",
+  "description": "Training throughput \u00e2\u20ac\u201d Conv2D(32,3,relu,SAME) \u00e2\u2020\u2019 Conv2D(64,3,relu,SAME) \u00e2\u2020\u2019 Conv2D(64,3,relu,VALID,s2) \u00e2\u2020\u2019 Flatten \u00e2\u2020\u2019 Dense(128,relu) \u00e2\u2020\u2019 Dense(10,softmax)",
   "optimizer": "adam",
   "lr": 0.001,
   "results": [
     {
       "runtime": "@isidorus/cpu",
       "runtimeVersion": "unknown",
-      "model": "Conv2D(32,3,relu,SAME) → Conv2D(64,3,relu,SAME) → Conv2D(64,3,relu,VALID,s2) → Flatten → Dense(128,relu) → Dense(10,softmax)",
+      "model": "Conv2D(32,3,relu,SAME) \u00e2\u2020\u2019 Conv2D(64,3,relu,SAME) \u00e2\u2020\u2019 Conv2D(64,3,relu,VALID,s2) \u00e2\u2020\u2019 Flatten \u00e2\u2020\u2019 Dense(128,relu) \u00e2\u2020\u2019 Dense(10,softmax)",
       "inputShape": [
         56,
         56,
@@ -19,44 +19,44 @@
         {
           "batchSize": 1,
           "latency": {
-            "mean": 12.343517999999994,
-            "p50": 11.697700000000168,
-            "p95": 13.867799999999988,
-            "p99": 14.425700000000006,
-            "min": 10.909099999999853,
-            "max": 14.425700000000006
+            "mean": 14.763463999999999,
+            "p50": 14.763463999999999,
+            "p95": 14.763463999999999,
+            "p99": 15.5016372,
+            "min": 14.763463999999999,
+            "max": 14.763463999999999
           },
-          "throughput": 81.01418088425038,
-          "stepsPerSec": 81.01418088425038,
-          "samplesPerSec": 81.01418088425038
+          "throughput": 67.73478094300904,
+          "stepsPerSec": 67.73478094300904,
+          "samplesPerSec": 67.73478094300904
         },
         {
           "batchSize": 8,
           "latency": {
-            "mean": 18.819729999999964,
-            "p50": 17.983600000000024,
-            "p95": 21.711299999999937,
-            "p99": 22.918299999999817,
-            "min": 17.40189999999984,
-            "max": 22.918299999999817
+            "mean": 22.483166,
+            "p50": 22.483166,
+            "p95": 22.483166,
+            "p99": 23.607324300000002,
+            "min": 22.483166,
+            "max": 22.483166
           },
-          "throughput": 425.08580091212866,
-          "stepsPerSec": 53.13572511401608,
-          "samplesPerSec": 425.08580091212866
+          "throughput": 355.8217734993372,
+          "stepsPerSec": 44.47772168741715,
+          "samplesPerSec": 355.8217734993372
         },
         {
           "batchSize": 32,
           "latency": {
-            "mean": 42.30448399999996,
-            "p50": 40.3741,
-            "p95": 50.28099999999995,
-            "p99": 51.91679999999997,
-            "min": 39.42230000000018,
-            "max": 51.91679999999997
+            "mean": 47.086646,
+            "p50": 47.086646,
+            "p95": 47.086646,
+            "p99": 49.440978300000005,
+            "min": 47.086646,
+            "max": 47.086646
           },
-          "throughput": 756.420997830869,
-          "stepsPerSec": 23.638156182214658,
-          "samplesPerSec": 756.420997830869
+          "throughput": 679.5982028535224,
+          "stepsPerSec": 21.237443839172574,
+          "samplesPerSec": 679.5982028535224
         }
       ],
       "machineInfo": {
@@ -66,13 +66,13 @@
         "cpus": 24,
         "cpuModel": "AMD Ryzen 9 5900X 12-Core Processor            "
       },
-      "timestamp": "2026-04-11T22:33:56.133Z",
-      "durationMs": 5881.3714
+      "timestamp": "2026-04-12T03:54:26.032Z",
+      "durationMs": 6772.8226
     },
     {
       "runtime": "@tensorflow/tfjs-node",
       "runtimeVersion": "4.22.0",
-      "model": "Conv2D(32,3,relu,SAME) → Conv2D(64,3,relu,SAME) → Conv2D(64,3,relu,VALID,s2) → Flatten → Dense(128,relu) → Dense(10,softmax)",
+      "model": "Conv2D(32,3,relu,SAME) \u00e2\u2020\u2019 Conv2D(64,3,relu,SAME) \u00e2\u2020\u2019 Conv2D(64,3,relu,VALID,s2) \u00e2\u2020\u2019 Flatten \u00e2\u2020\u2019 Dense(128,relu) \u00e2\u2020\u2019 Dense(10,softmax)",
       "inputShape": [
         56,
         56,
@@ -84,44 +84,44 @@
         {
           "batchSize": 1,
           "latency": {
-            "mean": 49.372076000000106,
-            "p50": 49.0601000000006,
-            "p95": 52.118899999999485,
-            "p99": 53.35739999999987,
-            "min": 47.598299999999654,
-            "max": 53.35739999999987
+            "mean": 52.93038399999994,
+            "p50": 52.662499999998545,
+            "p95": 55.70880000000034,
+            "p99": 56.68109999999979,
+            "min": 51.12799999999879,
+            "max": 56.68109999999979
           },
-          "throughput": 20.25436402552726,
-          "stepsPerSec": 20.25436402552726,
-          "samplesPerSec": 20.25436402552726
+          "throughput": 18.89274032094687,
+          "stepsPerSec": 18.89274032094687,
+          "samplesPerSec": 18.89274032094687
         },
         {
           "batchSize": 8,
           "latency": {
-            "mean": 66.10199199999995,
-            "p50": 65.7543999999998,
-            "p95": 69.39149999999972,
-            "p99": 72.56340000000091,
-            "min": 63.11449999999968,
-            "max": 72.56340000000091
+            "mean": 67.71232799999999,
+            "p50": 66.71459999999934,
+            "p95": 71.28529999999955,
+            "p99": 74.3848999999991,
+            "min": 65.19130000000041,
+            "max": 74.3848999999991
           },
-          "throughput": 121.02509709540986,
-          "stepsPerSec": 15.128137136926233,
-          "samplesPerSec": 121.02509709540986
+          "throughput": 118.14687570629683,
+          "stepsPerSec": 14.768359463287103,
+          "samplesPerSec": 118.14687570629683
         },
         {
           "batchSize": 32,
           "latency": {
-            "mean": 125.83175000000007,
-            "p50": 124.49939999999879,
-            "p95": 138.22790000000168,
-            "p99": 144.79160000000047,
-            "min": 118.04520000000048,
-            "max": 144.79160000000047
+            "mean": 130.92765799999995,
+            "p50": 128.6262999999999,
+            "p95": 150.22969999999987,
+            "p99": 154.7394000000022,
+            "min": 123.01020000000062,
+            "max": 154.7394000000022
           },
-          "throughput": 254.3078356615082,
-          "stepsPerSec": 7.947119864422131,
-          "samplesPerSec": 254.3078356615082
+          "throughput": 244.40977933020093,
+          "stepsPerSec": 7.637805604068779,
+          "samplesPerSec": 244.40977933020093
         }
       ],
       "machineInfo": {
@@ -131,8 +131,70 @@
         "cpus": 24,
         "cpuModel": "AMD Ryzen 9 5900X 12-Core Processor            "
       },
-      "timestamp": "2026-04-11T22:34:10.446Z",
-      "durationMs": 13564.310800000003
+      "timestamp": "2026-04-12T03:54:40.864Z",
+      "durationMs": 14136.2552
+    },
+    {
+      "runtime": "tensorflow-python",
+      "runtimeVersion": "2.21.0",
+      "model": "Conv2D(32,3,relu,SAME) \u2192 Conv2D(64,3,relu,SAME) \u2192 Conv2D(64,3,relu,VALID,s2) \u2192 Flatten \u2192 Dense(128,relu) \u2192 Dense(10,softmax)",
+      "optimizer": "adam",
+      "lr": 0.001,
+      "warmupSteps": 5,
+      "benchSteps": 50,
+      "batches": [
+        {
+          "batchSize": 1,
+          "latency": {
+            "mean": 11.370910003315657,
+            "p50": 10.754800052382052,
+            "p95": 11.191300000064075,
+            "p99": 12.344400049187243,
+            "min": 9.97430004645139,
+            "max": 40.72980000637472
+          },
+          "stepsPerSec": 87.94370896510559,
+          "samplesPerSec": 87.94370896510559,
+          "lastLoss": 0.0
+        },
+        {
+          "batchSize": 8,
+          "latency": {
+            "mean": 17.022724002599716,
+            "p50": 16.375200008042157,
+            "p95": 17.614200012758374,
+            "p99": 18.076000036671758,
+            "min": 15.496599953621626,
+            "max": 45.9055999526754
+          },
+          "stepsPerSec": 58.74500460956071,
+          "samplesPerSec": 469.9600368764857,
+          "lastLoss": 2.831219774179772e-07
+        },
+        {
+          "batchSize": 32,
+          "latency": {
+            "mean": 40.1914760004729,
+            "p50": 38.980299956165254,
+            "p95": 44.877100037410855,
+            "p99": 47.12090000975877,
+            "min": 35.67889996338636,
+            "max": 68.37270001415163
+          },
+          "stepsPerSec": 24.88089763083679,
+          "samplesPerSec": 796.1887241867773,
+          "lastLoss": 2.0138559193583205e-05
+        }
+      ],
+      "machineInfo": {
+        "platform": "Windows",
+        "arch": "AMD64",
+        "pythonVersion": "3.12.10",
+        "cpus": 24,
+        "cpuModel": "AMD64 Family 25 Model 33 Stepping 0, AuthenticAMD"
+      },
+      "timestamp": "2026-04-12T03:55:02.372580+00:00"
     }
-  ]
+  ],
+  "comparisons": []
 }

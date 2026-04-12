@@ -200,15 +200,7 @@ def main():
     out_dir  = Path(__file__).parent.parent.parent / "results" / "training"
     out_dir.mkdir(parents=True, exist_ok=True)
     
-    # Clean up old Python-generated benchmark files (keep TypeScript ones)
-    try:
-        for file in out_dir.glob("*.json"):
-            if "python" in file.name:
-                file.unlink()
-    except:
-        pass  # Directory might not exist yet
-    
-    out_path = out_dir / "training-python.json"
+    out_path = out_dir / "training.json"
 
     result = {
         "runtime":        "tensorflow-python",
@@ -232,7 +224,48 @@ def main():
         "timestamp":   datetime.now(timezone.utc).isoformat(),
     }
 
-    out_path.write_text(json.dumps(result, indent=2))
+    # Merge with existing results if file exists
+    existing_data = None
+    if out_path.exists():
+        try:
+            with open(out_path, 'r') as f:
+                existing_data = json.load(f)
+        except:
+            existing_data = None
+
+    if existing_data and isinstance(existing_data, dict) and "results" in existing_data:
+        # This is a suite file, merge results
+        # Build map of existing results by runtime
+        existing_results_map = {r.get("runtime"): r for r in existing_data.get("results", [])}
+        
+        # Replace result for this runtime, keep others
+        merged_results = []
+        for runtime_key, existing_result in existing_results_map.items():
+            if existing_result.get("runtime") == result["runtime"]:
+                merged_results.append(result)
+            else:
+                merged_results.append(existing_result)
+        
+        # Add new result if it's not already included (by runtime)
+        if not any(r.get("runtime") == result["runtime"] for r in merged_results):
+            merged_results.append(result)
+        
+        merged_data = {
+            **existing_data,
+            "results": merged_results,
+        }
+        out_path.write_text(json.dumps(merged_data, indent=2))
+    else:
+        # Create new suite file
+        suite = {
+            "name": "training",
+            "description": f"Training throughput — {MODEL_DESC}",
+            "optimizer": OPTIMIZER,
+            "lr": LR,
+            "results": [result],
+        }
+        out_path.write_text(json.dumps(suite, indent=2))
+
     print(f"Results saved → results/training/{out_path.name}")
 
 

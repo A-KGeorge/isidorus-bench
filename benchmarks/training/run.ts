@@ -24,6 +24,7 @@ import {
 } from "./config.js";
 import { runIsidorusTrainingBench } from "./isidorus.js";
 import { runTfjsNodeTrainingBench } from "./tfjs_node.js";
+import { mergeResults } from "../../shared/stats.js";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const REPO_ROOT = join(__dirname, "..", "..");
@@ -83,18 +84,8 @@ if (tfjsResult) {
 const outDir = join(REPO_ROOT, "results", "training");
 mkdirSync(outDir, { recursive: true });
 
-// Clean up old TypeScript-generated benchmark files (those without -python suffix)
-try {
-  const files = readdirSync(outDir);
-  for (const file of files) {
-    if (file.endsWith(".json") && !file.includes("-python")) {
-      const filePath = join(outDir, file);
-      rmSync(filePath);
-    }
-  }
-} catch {
-  // Directory might not exist yet, that's fine
-}
+const filename = "training.json";
+const filePath = join(outDir, filename);
 
 const suite = {
   name: "training",
@@ -102,8 +93,14 @@ const suite = {
   optimizer: OPTIMIZER,
   lr: LR,
   results: [isidorusResult, ...(tfjsResult ? [tfjsResult] : [])],
+  comparisons: [],
 };
 
-const filename = "training.json";
-writeFileSync(join(outDir, filename), JSON.stringify(suite, null, 2));
+// Merge new results with existing ones instead of overwriting
+const mergedSuite = mergeResults({
+  filePath,
+  newSuite: suite,
+});
+
+writeFileSync(filePath, JSON.stringify(mergedSuite, null, 2));
 console.log(`Results saved → results/training/${filename}`);
