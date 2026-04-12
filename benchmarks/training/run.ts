@@ -9,7 +9,7 @@
  *   BATCH_SIZES=1,8,32 BENCH_ITERS=100 node --import tsx benchmarks/training/run.ts
  */
 
-import { writeFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, mkdirSync, rmSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { availableParallelism } from "node:os";
@@ -80,10 +80,21 @@ if (tfjsResult) {
 
 // ── Save ─────────────────────────────────────────────────────────────────────
 
-const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-const filename = `${ts}-${process.platform}-${process.arch}.json`;
 const outDir = join(REPO_ROOT, "results", "training");
 mkdirSync(outDir, { recursive: true });
+
+// Clean up old TypeScript-generated benchmark files (those without -python suffix)
+try {
+  const files = readdirSync(outDir);
+  for (const file of files) {
+    if (file.endsWith(".json") && !file.includes("-python")) {
+      const filePath = join(outDir, file);
+      rmSync(filePath);
+    }
+  }
+} catch {
+  // Directory might not exist yet, that's fine
+}
 
 const suite = {
   name: "training",
@@ -93,5 +104,6 @@ const suite = {
   results: [isidorusResult, ...(tfjsResult ? [tfjsResult] : [])],
 };
 
+const filename = "training.json";
 writeFileSync(join(outDir, filename), JSON.stringify(suite, null, 2));
 console.log(`Results saved → results/training/${filename}`);

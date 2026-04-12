@@ -1,0 +1,198 @@
+{
+  "name": "conv2d",
+  "description": "Inference-only Conv2D stack, batches 1/4/16",
+  "results": [
+    {
+      "runtime": "@isidorus/cpu",
+      "runtimeVersion": "unknown",
+      "model": "Conv2D(32,3,relu,SAME) → Conv2D(64,3,relu,SAME) → Conv2D(64,3,relu,VALID,s2) → Flatten → Dense(128,relu) → Dense(10,softmax)",
+      "inputShape": [
+        56,
+        56,
+        3
+      ],
+      "warmupIters": 20,
+      "benchIters": 200,
+      "batches": [
+        {
+          "batchSize": 1,
+          "latency": {
+            "mean": 1.4510845000000017,
+            "p50": 1.473700000000008,
+            "p95": 1.6475000000000364,
+            "p99": 2.0347000000000435,
+            "min": 1.2107999999999493,
+            "max": 2.2122000000000526
+          },
+          "throughput": 689.1397434125986,
+          "eventLoopHealth": {
+            "ticks": 53,
+            "meanStallMs": 0.5448735849056512,
+            "maxStallMs": 1.4838999999999487,
+            "p99StallMs": 1.4838999999999487,
+            "durationMs": 293.63069999999993,
+            "stallFraction": 0
+          }
+        },
+        {
+          "batchSize": 4,
+          "latency": {
+            "mean": 1.9476354999999899,
+            "p50": 1.647799999999961,
+            "p95": 2.8990000000001146,
+            "p99": 3.083599999999933,
+            "min": 1.4810999999999694,
+            "max": 3.3174000000001342
+          },
+          "throughput": 2053.772381947249,
+          "eventLoopHealth": {
+            "ticks": 72,
+            "meanStallMs": 0.43833055555555234,
+            "maxStallMs": 1.5687000000000353,
+            "p99StallMs": 1.5687000000000353,
+            "durationMs": 393.8952999999999,
+            "stallFraction": 0
+          }
+        },
+        {
+          "batchSize": 16,
+          "latency": {
+            "mean": 3.8260545000000117,
+            "p50": 3.598700000000008,
+            "p95": 4.928699999999935,
+            "p99": 5.110299999999825,
+            "min": 3.324000000000069,
+            "max": 5.396299999999883
+          },
+          "throughput": 4181.853656292651,
+          "eventLoopHealth": {
+            "ticks": 115,
+            "meanStallMs": 1.6939930434782542,
+            "maxStallMs": 4.818699999999808,
+            "p99StallMs": 4.571999999999662,
+            "durationMs": 769.3020000000001,
+            "stallFraction": 0
+          }
+        }
+      ],
+      "machineInfo": {
+        "platform": "win32",
+        "arch": "x64",
+        "nodeVersion": "v22.17.1",
+        "cpus": 24,
+        "cpuModel": "AMD Ryzen 9 5900X 12-Core Processor            "
+      },
+      "timestamp": "2026-04-11T22:33:43.859Z",
+      "durationMs": 3390.5449
+    },
+    {
+      "runtime": "@tensorflow/tfjs-node",
+      "runtimeVersion": "4.22.0",
+      "model": "Conv2D(32,3,relu,SAME) → Conv2D(64,3,relu,SAME) → Conv2D(64,3,relu,VALID,s2) → Flatten → Dense(128,relu) → Dense(10,softmax)",
+      "inputShape": [
+        56,
+        56,
+        3
+      ],
+      "warmupIters": 20,
+      "benchIters": 200,
+      "batches": [
+        {
+          "batchSize": 1,
+          "latency": {
+            "mean": 2.6675015000000393,
+            "p50": 2.6141999999999825,
+            "p95": 3.111399999999776,
+            "p99": 3.3825999999999112,
+            "min": 2.3310999999994237,
+            "max": 3.494300000000294
+          },
+          "throughput": 374.8826383040404,
+          "eventLoopHealth": {
+            "ticks": 99,
+            "meanStallMs": 0.4480323232323321,
+            "maxStallMs": 2.5707000000002154,
+            "p99StallMs": 2.5707000000002154,
+            "durationMs": 540.3441000000003,
+            "stallFraction": 0
+          }
+        },
+        {
+          "batchSize": 4,
+          "latency": {
+            "mean": 3.2342480000000613,
+            "p50": 3.190599999999904,
+            "p95": 3.5806000000002314,
+            "p99": 3.706300000000738,
+            "min": 3.009200000000419,
+            "max": 3.7971999999999753
+          },
+          "throughput": 1236.7635382320477,
+          "eventLoopHealth": {
+            "ticks": 100,
+            "meanStallMs": 1.5340319999999974,
+            "maxStallMs": 2.6705999999994674,
+            "p99StallMs": 2.4362999999993917,
+            "durationMs": 653.6992999999993,
+            "stallFraction": 0
+          }
+        },
+        {
+          "batchSize": 16,
+          "latency": {
+            "mean": 7.9200764999999365,
+            "p50": 7.92240000000038,
+            "p95": 8.99290000000019,
+            "p99": 9.302200000000084,
+            "min": 6.973399999999856,
+            "max": 10.150700000000143
+          },
+          "throughput": 2020.1825070755476,
+          "eventLoopHealth": {
+            "ticks": 200,
+            "meanStallMs": 2.9754925,
+            "maxStallMs": 5.202399999999216,
+            "p99StallMs": 4.355900000000474,
+            "durationMs": 1595.1292999999996,
+            "stallFraction": 0.005
+          }
+        }
+      ],
+      "machineInfo": {
+        "platform": "win32",
+        "arch": "x64",
+        "nodeVersion": "v22.17.1",
+        "cpus": 24,
+        "cpuModel": "AMD Ryzen 9 5900X 12-Core Processor            "
+      },
+      "timestamp": "2026-04-11T22:33:47.865Z",
+      "durationMs": 3298.5193
+    }
+  ],
+  "comparisons": [
+    {
+      "batchSize": 1,
+      "baseline": "@tensorflow/tfjs-node",
+      "candidate": "@isidorus/cpu",
+      "baselineMs": 2.6675015000000393,
+      "candidateMs": 1.4510845000000017,
+      "speedup": 1.8382812992627489
+    },
+    {
+      "batchSize": 4,
+      "baseline": "@tensorflow/tfjs-node",
+      "candidate": "@isidorus/cpu",
+      "baselineMs": 3.2342480000000613,
+      "candidateMs": 1.9476354999999899,
+      "speedup": 1.6606023046920628
+    },
+    {
+      "batchSize": 16,
+      "baseline": "@tensorflow/tfjs-node",
+      "candidate": "@isidorus/cpu",
+      "baselineMs": 7.9200764999999365,
+      "candidateMs": 3.8260545000000117,
+      "speedup": 2.07003755435264
+    }
+  ]
+}

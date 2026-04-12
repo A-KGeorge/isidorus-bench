@@ -8,15 +8,7 @@
  */
 
 import { performance } from "node:perf_hooks";
-import {
-  graph,
-  session,
-  optimizers,
-  Sequential,
-  Conv2D,
-  Flatten,
-  Dense,
-} from "@isidorus/cpu";
+import { Model, Conv2D, Flatten, Dense } from "@isidorus/cpu";
 
 import {
   batchResult,
@@ -57,64 +49,58 @@ async function getRuntimeVersion(): Promise<string> {
 
 // ─── Single-batch benchmark ──────────────────────────────────────────────────
 //
-// Each batch size builds its own graph and session with the batch dimension
-// fixed. This matches how tfjs-node handles batch shapes and gives TF's
-// XLA-style graph optimizer the best chance to fuse ops for the specific size.
+// Each batch size builds its own model with the batch dimension handled
+// automatically by the high-level Model API. Simple and clean.
 
 async function runForBatch(batchSize: number) {
-  const g = graph();
-  const model = new Sequential(g, [
-    new Conv2D(32, {
-      kernelSize: 3,
-      activation: "relu",
-      padding: "SAME",
-      name: "c1",
-    }),
-    new Conv2D(64, {
-      kernelSize: 3,
-      activation: "relu",
-      padding: "SAME",
-      name: "c2",
-    }),
-    new Conv2D(64, {
-      kernelSize: 3,
-      activation: "relu",
-      padding: "VALID",
-      strides: 2,
-      name: "c3",
-    }),
-    new Flatten(),
-    new Dense(128, { activation: "relu", name: "fc1" }),
-    new Dense(NUM_CLASSES, { activation: "softmax", name: "out" }),
-  ]);
+  const model = new Model(
+    [INPUT_H, INPUT_W, INPUT_C],
+    [
+      new Conv2D(32, {
+        kernelSize: 3,
+        activation: "relu",
+        padding: "SAME",
+        name: "c1",
+      }),
+      new Conv2D(64, {
+        kernelSize: 3,
+        activation: "relu",
+        padding: "SAME",
+        name: "c2",
+      }),
+      new Conv2D(64, {
+        kernelSize: 3,
+        activation: "relu",
+        padding: "VALID",
+        strides: 2,
+        name: "c3",
+      }),
+      new Flatten(),
+      new Dense(128, { activation: "relu", name: "fc1" }),
+      new Dense(NUM_CLASSES, { activation: "softmax", name: "out" }),
+    ],
+  );
 
-  model.compile({
-    loss: "sparse_categorical_crossentropy",
-    inputShape: [INPUT_H, INPUT_W, INPUT_C],
-  });
-
-  const opt = new optimizers.Adam(g, model.params, 0.001);
-  const sess = session(g);
-  await model.init(sess, opt);
+  model.compile({ loss: "sparse_categorical_crossentropy", optimizer: "adam" });
 
   // Build a fixed input buffer with random floats in [0, 0.5].
+  // Can pass plain JS array thanks to auto-conversion!
   const nElem = batchSize * INPUT_H * INPUT_W * INPUT_C;
-  const xBuf = Buffer.alloc(nElem * 4);
-  for (let i = 0; i < nElem; i++) xBuf.writeFloatLE(Math.random() * 0.5, i * 4);
-  const xShape = [batchSize, INPUT_H, INPUT_W, INPUT_C];
+  const xData: number[] = [];
+  for (let i = 0; i < nElem; i++) xData.push(Math.random() * 0.5);
 
   // Warmup — allows TF to JIT-compile any lazy kernel builds.
-  for (let i = 0; i < WARMUP_ITERS; i++)
-    await model.predict(sess, xBuf, xShape);
+  // Uses auto data conversion under the hood
+  for (let i = 0; i < WARMUP_ITERS; i++) await model.predict(xData, batchSize);
 
-  // Timed iterations.
+  // Timed iterations with event loop monitoring.
   const monitor = startEventLoopMonitor();
   const samples = await collectSamples(BENCH_ITERS, () =>
-    model.predict(sess, xBuf, xShape).then(() => {}),
+    model.predict(xData, batchSize).then(() => {}),
   );
   const eventLoopHealth = monitor.stop();
 
-  sess.destroy();
+  model.dispose();
   const result = batchResult(batchSize, samples);
   result.eventLoopHealth = eventLoopHealth;
   return result;

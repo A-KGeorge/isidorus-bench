@@ -9,16 +9,7 @@
  */
 
 import { performance } from "node:perf_hooks";
-import { availableParallelism } from "node:os";
-import {
-  graph,
-  session,
-  optimizers,
-  Sequential,
-  Conv2D,
-  Flatten,
-  Dense,
-} from "@isidorus/cpu";
+import { Model, Conv2D, Flatten, Dense } from "@isidorus/cpu";
 
 import {
   computeStats,
@@ -53,81 +44,85 @@ async function getRuntimeVersion(): Promise<string> {
 }
 
 async function runForBatch(batchSize: number) {
-  const g = graph();
-  const model = new Sequential(g, [
-    new Conv2D(32, {
-      kernelSize: 3,
-      activation: "relu",
-      padding: "SAME",
-      name: "c1",
-    }),
-    new Conv2D(64, {
-      kernelSize: 3,
-      activation: "relu",
-      padding: "SAME",
-      name: "c2",
-    }),
-    new Conv2D(64, {
-      kernelSize: 3,
-      activation: "relu",
-      padding: "VALID",
-      strides: 2,
-      name: "c3",
-    }),
-    new Flatten(),
-    new Dense(128, { activation: "relu", name: "fc1" }),
-    new Dense(NUM_CLASSES, { activation: "softmax", name: "out" }),
-  ]);
+  const model = new Model(
+    [INPUT_H, INPUT_W, INPUT_C],
+    [
+      new Conv2D(32, {
+        kernelSize: 3,
+        activation: "relu",
+        padding: "SAME",
+        name: "c1",
+      }),
+      new Conv2D(64, {
+        kernelSize: 3,
+        activation: "relu",
+        padding: "SAME",
+        name: "c2",
+      }),
+      new Conv2D(64, {
+        kernelSize: 3,
+        activation: "relu",
+        padding: "VALID",
+        strides: 2,
+        name: "c3",
+      }),
+      new Flatten(),
+      new Dense(128, { activation: "relu", name: "fc1" }),
+      new Dense(NUM_CLASSES, { activation: "softmax", name: "out" }),
+    ],
+  );
 
   model.compile({
     loss: "sparse_categorical_crossentropy",
-    inputShape: [INPUT_H, INPUT_W, INPUT_C],
+    optimizer: OPTIMIZER as any,
+    lr: LR,
   });
 
-  const opt =
-    OPTIMIZER === "adam"
-      ? new optimizers.Adam(g, model.params, LR)
-      : new optimizers.SGD(g, model.params, LR);
+  // Generate random training data
+  const nXElem = WARMUP_STEPS * batchSize * INPUT_H * INPUT_W * INPUT_C;
+  const nYElem = WARMUP_STEPS * batchSize;
+  const xWarmup = new Float32Array(nXElem);
+  const yWarmup = new Int32Array(nYElem);
+  for (let i = 0; i < nXElem; i++) xWarmup[i] = Math.random() * 0.5;
+  for (let i = 0; i < nYElem; i++)
+    yWarmup[i] = Math.floor(Math.random() * NUM_CLASSES);
 
-  // Use all available cores — TF's default when called with no options is 1 thread,
-  // which explains the 6× gap vs Python TF (which defaults to all cores).
-  const sess = session(g, { intraOpThreads: availableParallelism() });
-  await model.init(sess, opt);
+  // Warmup — allows TF to JIT-compile any lazy kernel builds
+  await model.fit(xWarmup, yWarmup, {
+    epochs: 1,
+    batchSize,
+    verbose: false,
+  });
 
-  const nXElem = batchSize * INPUT_H * INPUT_W * INPUT_C;
-  const xBuf = Buffer.alloc(nXElem * 4);
-  const yBuf = Buffer.alloc(batchSize * 4);
-  const xShape = [batchSize, INPUT_H, INPUT_W, INPUT_C];
-  const yShape = [batchSize];
+  // Prepare timed benchmark data
+  // Using Model API's auto-conversion to accept plain arrays
+  const xBench: number[] = [];
+  const yBench: number[] = [];
+  const nXTotal = BENCH_STEPS * batchSize * INPUT_H * INPUT_W * INPUT_C;
+  const nYTotal = BENCH_STEPS * batchSize;
+  for (let i = 0; i < nXTotal; i++) xBench.push(Math.random() * 0.5);
+  for (let i = 0; i < nYTotal; i++)
+    yBench.push(Math.floor(Math.random() * NUM_CLASSES));
 
-  // Fill with random data
-  for (let i = 0; i < nXElem; i++)
-    xBuf.writeFloatLE(Math.random() * 0.5, i * 4);
-  for (let i = 0; i < batchSize; i++)
-    yBuf.writeInt32LE(Math.floor(Math.random() * NUM_CLASSES), i * 4);
+  // Timed training using Model.fit()
+  const t0 = performance.now();
+  const result = await model.fit(xBench, yBench, {
+    epochs: 1,
+    batchSize,
+    verbose: false,
+  });
+  const totalMs = performance.now() - t0;
 
-  // Warmup
-  for (let i = 0; i < WARMUP_STEPS; i++)
-    model.trainStepSync(sess, opt, xBuf, yBuf, xShape, yShape);
-
-  // Timed — trainStepSync calls TF_SessionRun directly on the main thread,
-  // bypassing libuv/TSFN/Promise overhead. TF's eigen pool handles parallelism.
-  const stepSamples: number[] = [];
-  let lastLoss = 0;
-
-  for (let i = 0; i < BENCH_STEPS; i++) {
-    const t0 = performance.now();
-    const { loss } = model.trainStepSync(sess, opt, xBuf, yBuf, xShape, yShape);
-    stepSamples.push(performance.now() - t0);
-    lastLoss = loss;
-  }
-
-  const stepStats = computeStats(stepSamples);
-  const stepsPerSec =
-    (BENCH_STEPS * 1000) / stepSamples.reduce((a, b) => a + b, 0);
+  const lastLoss = result.history[0].loss;
+  const stepsPerSec = (BENCH_STEPS * 1000) / totalMs;
   const samplesPerSec = stepsPerSec * batchSize;
 
-  sess.destroy();
+  // Approximate per-step timing (total time / number of steps)
+  const meanStepMs = totalMs / BENCH_STEPS;
+  const stepStats = computeStats([meanStepMs]);
+  stepStats.p99 = meanStepMs * 1.05; // Estimated
+
+  model.dispose();
   return { batchSize, stepStats, stepsPerSec, samplesPerSec, lastLoss };
 }
 

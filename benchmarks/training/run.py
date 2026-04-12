@@ -11,6 +11,7 @@ Usage:
 
 import json
 import os
+import shutil
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '1'
 
@@ -195,11 +196,19 @@ def main():
     print("─" * W + "\n")
 
     # Save
-    ts       = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%S")
     plat     = f"{platform.system().lower()}-{platform.machine().lower()}"
     out_dir  = Path(__file__).parent.parent.parent / "results" / "training"
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / f"{ts}-python-{plat}.json"
+    
+    # Clean up old Python-generated benchmark files (keep TypeScript ones)
+    try:
+        for file in out_dir.glob("*.json"):
+            if "python" in file.name:
+                file.unlink()
+    except:
+        pass  # Directory might not exist yet
+    
+    out_path = out_dir / "training-python.json"
 
     result = {
         "runtime":        "tensorflow-python",

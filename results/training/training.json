@@ -1,0 +1,138 @@
+{
+  "name": "training",
+  "description": "Training throughput — Conv2D(32,3,relu,SAME) → Conv2D(64,3,relu,SAME) → Conv2D(64,3,relu,VALID,s2) → Flatten → Dense(128,relu) → Dense(10,softmax)",
+  "optimizer": "adam",
+  "lr": 0.001,
+  "results": [
+    {
+      "runtime": "@isidorus/cpu",
+      "runtimeVersion": "unknown",
+      "model": "Conv2D(32,3,relu,SAME) → Conv2D(64,3,relu,SAME) → Conv2D(64,3,relu,VALID,s2) → Flatten → Dense(128,relu) → Dense(10,softmax)",
+      "inputShape": [
+        56,
+        56,
+        3
+      ],
+      "warmupIters": 5,
+      "benchIters": 50,
+      "batches": [
+        {
+          "batchSize": 1,
+          "latency": {
+            "mean": 12.343517999999994,
+            "p50": 11.697700000000168,
+            "p95": 13.867799999999988,
+            "p99": 14.425700000000006,
+            "min": 10.909099999999853,
+            "max": 14.425700000000006
+          },
+          "throughput": 81.01418088425038,
+          "stepsPerSec": 81.01418088425038,
+          "samplesPerSec": 81.01418088425038
+        },
+        {
+          "batchSize": 8,
+          "latency": {
+            "mean": 18.819729999999964,
+            "p50": 17.983600000000024,
+            "p95": 21.711299999999937,
+            "p99": 22.918299999999817,
+            "min": 17.40189999999984,
+            "max": 22.918299999999817
+          },
+          "throughput": 425.08580091212866,
+          "stepsPerSec": 53.13572511401608,
+          "samplesPerSec": 425.08580091212866
+        },
+        {
+          "batchSize": 32,
+          "latency": {
+            "mean": 42.30448399999996,
+            "p50": 40.3741,
+            "p95": 50.28099999999995,
+            "p99": 51.91679999999997,
+            "min": 39.42230000000018,
+            "max": 51.91679999999997
+          },
+          "throughput": 756.420997830869,
+          "stepsPerSec": 23.638156182214658,
+          "samplesPerSec": 756.420997830869
+        }
+      ],
+      "machineInfo": {
+        "platform": "win32",
+        "arch": "x64",
+        "nodeVersion": "v22.17.1",
+        "cpus": 24,
+        "cpuModel": "AMD Ryzen 9 5900X 12-Core Processor            "
+      },
+      "timestamp": "2026-04-11T22:33:56.133Z",
+      "durationMs": 5881.3714
+    },
+    {
+      "runtime": "@tensorflow/tfjs-node",
+      "runtimeVersion": "4.22.0",
+      "model": "Conv2D(32,3,relu,SAME) → Conv2D(64,3,relu,SAME) → Conv2D(64,3,relu,VALID,s2) → Flatten → Dense(128,relu) → Dense(10,softmax)",
+      "inputShape": [
+        56,
+        56,
+        3
+      ],
+      "warmupIters": 5,
+      "benchIters": 50,
+      "batches": [
+        {
+          "batchSize": 1,
+          "latency": {
+            "mean": 49.372076000000106,
+            "p50": 49.0601000000006,
+            "p95": 52.118899999999485,
+            "p99": 53.35739999999987,
+            "min": 47.598299999999654,
+            "max": 53.35739999999987
+          },
+          "throughput": 20.25436402552726,
+          "stepsPerSec": 20.25436402552726,
+          "samplesPerSec": 20.25436402552726
+        },
+        {
+          "batchSize": 8,
+          "latency": {
+            "mean": 66.10199199999995,
+            "p50": 65.7543999999998,
+            "p95": 69.39149999999972,
+            "p99": 72.56340000000091,
+            "min": 63.11449999999968,
+            "max": 72.56340000000091
+          },
+          "throughput": 121.02509709540986,
+          "stepsPerSec": 15.128137136926233,
+          "samplesPerSec": 121.02509709540986
+        },
+        {
+          "batchSize": 32,
+          "latency": {
+            "mean": 125.83175000000007,
+            "p50": 124.49939999999879,
+            "p95": 138.22790000000168,
+            "p99": 144.79160000000047,
+            "min": 118.04520000000048,
+            "max": 144.79160000000047
+          },
+          "throughput": 254.3078356615082,
+          "stepsPerSec": 7.947119864422131,
+          "samplesPerSec": 254.3078356615082
+        }
+      ],
+      "machineInfo": {
+        "platform": "win32",
+        "arch": "x64",
+        "nodeVersion": "v22.17.1",
+        "cpus": 24,
+        "cpuModel": "AMD Ryzen 9 5900X 12-Core Processor            "
+      },
+      "timestamp": "2026-04-11T22:34:10.446Z",
+      "durationMs": 13564.310800000003
+    }
+  ]
+}

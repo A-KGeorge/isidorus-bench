@@ -1,0 +1,448 @@
+{
+  "name": "inference_pool",
+  "description": "Worker-pool throughput benchmark — bench_large.pb",
+  "results": [
+    {
+      "runtime": "@isidorus/cpu (InferencePool tf-parallel)",
+      "runtimeVersion": "latest",
+      "model": "bench_large.pb",
+      "inputShape": [
+        1,
+        4096
+      ],
+      "warmupIters": 20,
+      "benchIters": 200,
+      "batches": [
+        {
+          "batchSize": 1,
+          "latency": {
+            "mean": 5.048843999999995,
+            "p50": 4.932199999999739,
+            "p95": 5.2952000000000226,
+            "p99": 8.35360000000037,
+            "min": 4.7620999999999185,
+            "max": 10.109500000000025
+          },
+          "throughput": 198
+        },
+        {
+          "batchSize": 2,
+          "latency": {
+            "mean": 8.362229500000002,
+            "p50": 8.602200000000266,
+            "p95": 9.231400000000122,
+            "p99": 9.444700000000012,
+            "min": 5.851200000000063,
+            "max": 9.807300000000396
+          },
+          "throughput": 239
+        },
+        {
+          "batchSize": 3,
+          "latency": {
+            "mean": 12.832986999999985,
+            "p50": 12.720900000000256,
+            "p95": 16.541000000000167,
+            "p99": 17.476200000000063,
+            "min": 7.880600000000413,
+            "max": 19.606299999999464
+          },
+          "throughput": 233
+        },
+        {
+          "batchSize": 4,
+          "latency": {
+            "mean": 16.859634499999927,
+            "p50": 16.673099999999977,
+            "p95": 23.613000000000284,
+            "p99": 25.300200000000586,
+            "min": 5.070099999999911,
+            "max": 27.829499999999825
+          },
+          "throughput": 236
+        },
+        {
+          "batchSize": 5,
+          "latency": {
+            "mean": 20.85573350000003,
+            "p50": 19.88879999999972,
+            "p95": 29.708800000000338,
+            "p99": 32.705699999999524,
+            "min": 11.166299999999865,
+            "max": 38.77900000000045
+          },
+          "throughput": 238
+        },
+        {
+          "batchSize": 6,
+          "latency": {
+            "mean": 26.352209499999972,
+            "p50": 26.178799999999683,
+            "p95": 40.2491,
+            "p99": 46.04809999999998,
+            "min": 12.268700000000536,
+            "max": 47.853800000000774
+          },
+          "throughput": 226
+        },
+        {
+          "batchSize": 7,
+          "latency": {
+            "mean": 30.537136000000004,
+            "p50": 30.313600000000406,
+            "p95": 43.89400000000023,
+            "p99": 51.73790000000008,
+            "min": 13.403800000000047,
+            "max": 55.05169999999998
+          },
+          "throughput": 227
+        },
+        {
+          "batchSize": 8,
+          "latency": {
+            "mean": 34.86554850000004,
+            "p50": 33.46630000000005,
+            "p95": 46.91609999999855,
+            "p99": 52.47350000000006,
+            "min": 12.240499999999884,
+            "max": 60.17619999999988
+          },
+          "throughput": 227
+        }
+      ],
+      "eventLoopHealth": [
+        {
+          "concurrency": 1,
+          "ticks": 185,
+          "meanStallMs": 0.506229729729733,
+          "maxStallMs": 5.349799999999959,
+          "p99StallMs": 4.930100000000039,
+          "durationMs": 1011.8323,
+          "stallFraction": 0.005405405405405406
+        },
+        {
+          "concurrency": 2,
+          "ticks": 99,
+          "meanStallMs": 3.3748010101010073,
+          "maxStallMs": 8.606500000000324,
+          "p99StallMs": 8.606500000000324,
+          "durationMs": 837.6368000000002,
+          "stallFraction": 0.13131313131313133
+        },
+        {
+          "concurrency": 3,
+          "ticks": 104,
+          "meanStallMs": 3.297346153846145,
+          "maxStallMs": 10.268200000000434,
+          "p99StallMs": 9.546299999999974,
+          "durationMs": 859.1509999999998,
+          "stallFraction": 0.2980769230769231
+        },
+        {
+          "concurrency": 4,
+          "ticks": 97,
+          "meanStallMs": 3.7237938144329763,
+          "maxStallMs": 12.050699999999779,
+          "p99StallMs": 12.050699999999779,
+          "durationMs": 848.0549999999994,
+          "stallFraction": 0.28865979381443296
+        },
+        {
+          "concurrency": 5,
+          "ticks": 99,
+          "meanStallMs": 3.5052828282828297,
+          "maxStallMs": 12.958599999999933,
+          "p99StallMs": 12.958599999999933,
+          "durationMs": 839.8245000000006,
+          "stallFraction": 0.29292929292929293
+        },
+        {
+          "concurrency": 6,
+          "ticks": 109,
+          "meanStallMs": 3.1433100917431163,
+          "maxStallMs": 13.57470000000012,
+          "p99StallMs": 12.698199999999815,
+          "durationMs": 885.2453000000005,
+          "stallFraction": 0.1926605504587156
+        },
+        {
+          "concurrency": 7,
+          "ticks": 109,
+          "meanStallMs": 3.0857614678898746,
+          "maxStallMs": 11.410400000000664,
+          "p99StallMs": 10.692900000000009,
+          "durationMs": 879.8499000000002,
+          "stallFraction": 0.23853211009174313
+        },
+        {
+          "concurrency": 8,
+          "ticks": 109,
+          "meanStallMs": 3.0936247706422115,
+          "maxStallMs": 11.326100000000224,
+          "p99StallMs": 11.01260000000002,
+          "durationMs": 881.5493000000006,
+          "stallFraction": 0.1559633027522936
+        }
+      ],
+      "machineInfo": {
+        "platform": "win32",
+        "arch": "x64",
+        "nodeVersion": "v22.17.1",
+        "cpus": 24,
+        "cpuModel": "AMD Ryzen 9 5900X 12-Core Processor            "
+      },
+      "timestamp": "2026-04-11T22:09:48.443Z",
+      "durationMs": 0,
+      "coldStartMs": 2172.0966
+    },
+    {
+      "runtime": "@tensorflow/tfjs-node (single session, concurrent callers)",
+      "runtimeVersion": "4.22.0",
+      "model": "bench_large.pb",
+      "inputShape": [
+        1,
+        4096
+      ],
+      "warmupIters": 20,
+      "benchIters": 200,
+      "batches": [
+        {
+          "batchSize": 1,
+          "latency": {
+            "mean": 5.259655500000053,
+            "p50": 5.218000000000757,
+            "p95": 5.550199999999677,
+            "p99": 5.8026000000008935,
+            "min": 5.026700000000346,
+            "max": 6.010000000000218
+          },
+          "throughput": 188,
+          "eventLoop": {
+            "ticks": 200,
+            "meanStallMs": 0.31994799999999485,
+            "maxStallMs": 1.381999999999607,
+            "p99StallMs": 0.8585999999995693,
+            "durationMs": 1064.0324,
+            "stallFraction": 0
+          }
+        },
+        {
+          "batchSize": 2,
+          "latency": {
+            "mean": 7.885294000000021,
+            "p50": 5.775499999999738,
+            "p95": 10.887199999999211,
+            "p99": 11.31500000000051,
+            "min": 4.995899999999892,
+            "max": 11.69340000000011
+          },
+          "throughput": 189,
+          "eventLoop": {
+            "ticks": 100,
+            "meanStallMs": 5.569509999999991,
+            "maxStallMs": 6.75669999999991,
+            "p99StallMs": 6.5856000000003405,
+            "durationMs": 1057.0010999999995,
+            "stallFraction": 1
+          }
+        },
+        {
+          "batchSize": 3,
+          "latency": {
+            "mean": 10.432826999999879,
+            "p50": 10.408000000001266,
+            "p95": 15.910899999998946,
+            "p99": 17.230599999998958,
+            "min": 4.991700000000492,
+            "max": 17.468399999999747
+          },
+          "throughput": 191,
+          "eventLoop": {
+            "ticks": 67,
+            "meanStallMs": 10.655602985074628,
+            "maxStallMs": 12.530899999999747,
+            "p99StallMs": 12.530899999999747,
+            "durationMs": 1048.962300000001,
+            "stallFraction": 1
+          }
+        },
+        {
+          "batchSize": 4,
+          "latency": {
+            "mean": 12.88106199999992,
+            "p50": 10.934799999999086,
+            "p95": 20.753899999999703,
+            "p99": 21.287200000000666,
+            "min": 4.975099999999657,
+            "max": 21.99279999999999
+          },
+          "throughput": 194,
+          "eventLoop": {
+            "ticks": 50,
+            "meanStallMs": 15.661349999999985,
+            "maxStallMs": 17.048800000000483,
+            "p99StallMs": 17.048800000000483,
+            "durationMs": 1033.1139000000003,
+            "stallFraction": 1
+          }
+        },
+        {
+          "batchSize": 5,
+          "latency": {
+            "mean": 15.406967999999887,
+            "p50": 15.375,
+            "p95": 25.8158999999996,
+            "p99": 26.238400000000183,
+            "min": 4.978100000000268,
+            "max": 27.701200000001336
+          },
+          "throughput": 194,
+          "eventLoop": {
+            "ticks": 40,
+            "meanStallMs": 20.77440999999999,
+            "maxStallMs": 22.757700000000114,
+            "p99StallMs": 22.757700000000114,
+            "durationMs": 1031.0139,
+            "stallFraction": 1
+          }
+        },
+        {
+          "batchSize": 6,
+          "latency": {
+            "mean": 17.95850499999993,
+            "p50": 16.234199999998964,
+            "p95": 31.034700000000157,
+            "p99": 31.854200000001583,
+            "min": 4.9804000000003725,
+            "max": 33.70659999999771
+          },
+          "throughput": 193,
+          "eventLoop": {
+            "ticks": 34,
+            "meanStallMs": 25.4506970588235,
+            "maxStallMs": 28.763699999999517,
+            "p99StallMs": 28.763699999999517,
+            "durationMs": 1035.3618000000006,
+            "stallFraction": 1
+          }
+        },
+        {
+          "batchSize": 7,
+          "latency": {
+            "mean": 20.317984499999984,
+            "p50": 20.18920000000071,
+            "p95": 35.711200000001554,
+            "p99": 36.906700000003184,
+            "min": 4.951399999998102,
+            "max": 39.096700000001874
+          },
+          "throughput": 194,
+          "eventLoop": {
+            "ticks": 29,
+            "meanStallMs": 30.56012068965519,
+            "maxStallMs": 34.15169999999853,
+            "p99StallMs": 34.15169999999853,
+            "durationMs": 1031.3355999999985,
+            "stallFraction": 1
+          }
+        },
+        {
+          "batchSize": 8,
+          "latency": {
+            "mean": 23.571820500000193,
+            "p50": 22.59610000000248,
+            "p95": 41.74419999999736,
+            "p99": 42.6859000000004,
+            "min": 5.0561000000016065,
+            "max": 44.97509999999966
+          },
+          "throughput": 190,
+          "eventLoop": {
+            "ticks": 25,
+            "meanStallMs": 37.03216799999995,
+            "maxStallMs": 40.05870000000141,
+            "p99StallMs": 40.05870000000141,
+            "durationMs": 1050.8424000000014,
+            "stallFraction": 1
+          }
+        }
+      ],
+      "machineInfo": {
+        "platform": "win32",
+        "arch": "x64",
+        "nodeVersion": "v22.17.1",
+        "cpus": 24,
+        "cpuModel": "AMD Ryzen 9 5900X 12-Core Processor            "
+      },
+      "timestamp": "2026-04-11T22:09:58.499Z",
+      "durationMs": 9223.693500000001,
+      "coldStartMs": 141.51940000000104
+    }
+  ],
+  "comparisons": [
+    {
+      "batchSize": 1,
+      "baseline": "@tensorflow/tfjs-node (single session, concurrent callers)",
+      "candidate": "@isidorus/cpu (InferencePool tf-parallel)",
+      "baselineMs": 5.259655500000053,
+      "candidateMs": 5.048843999999995,
+      "speedup": 1.0417544095242512
+    },
+    {
+      "batchSize": 2,
+      "baseline": "@tensorflow/tfjs-node (single session, concurrent callers)",
+      "candidate": "@isidorus/cpu (InferencePool tf-parallel)",
+      "baselineMs": 7.885294000000021,
+      "candidateMs": 8.362229500000002,
+      "speedup": 0.9429655093776151
+    },
+    {
+      "batchSize": 3,
+      "baseline": "@tensorflow/tfjs-node (single session, concurrent callers)",
+      "candidate": "@isidorus/cpu (InferencePool tf-parallel)",
+      "baselineMs": 10.432826999999879,
+      "candidateMs": 12.832986999999985,
+      "speedup": 0.8129694980599521
+    },
+    {
+      "batchSize": 4,
+      "baseline": "@tensorflow/tfjs-node (single session, concurrent callers)",
+      "candidate": "@isidorus/cpu (InferencePool tf-parallel)",
+      "baselineMs": 12.88106199999992,
+      "candidateMs": 16.859634499999927,
+      "speedup": 0.7640178676471293
+    },
+    {
+      "batchSize": 5,
+      "baseline": "@tensorflow/tfjs-node (single session, concurrent callers)",
+      "candidate": "@isidorus/cpu (InferencePool tf-parallel)",
+      "baselineMs": 15.406967999999887,
+      "candidateMs": 20.85573350000003,
+      "speedup": 0.7387401646650243
+    },
+    {
+      "batchSize": 6,
+      "baseline": "@tensorflow/tfjs-node (single session, concurrent callers)",
+      "candidate": "@isidorus/cpu (InferencePool tf-parallel)",
+      "baselineMs": 17.95850499999993,
+      "candidateMs": 26.352209499999972,
+      "speedup": 0.6814800481910236
+    },
+    {
+      "batchSize": 7,
+      "baseline": "@tensorflow/tfjs-node (single session, concurrent callers)",
+      "candidate": "@isidorus/cpu (InferencePool tf-parallel)",
+      "baselineMs": 20.317984499999984,
+      "candidateMs": 30.537136000000004,
+      "speedup": 0.6653533094917605
+    },
+    {
+      "batchSize": 8,
+      "baseline": "@tensorflow/tfjs-node (single session, concurrent callers)",
+      "candidate": "@isidorus/cpu (InferencePool tf-parallel)",
+      "baselineMs": 23.571820500000193,
+      "candidateMs": 34.86554850000004,
+      "speedup": 0.6760777189551505
+    }
+  ]
+}

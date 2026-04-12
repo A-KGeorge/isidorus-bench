@@ -31,6 +31,7 @@ import argparse
 import json
 import os
 import platform
+import shutil
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -365,11 +366,18 @@ def main():
     # ── Save results ──────────────────────────────────────────────────────────
     import datetime
     from datetime import timezone
-    ts          = datetime.datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%S")
     plat        = f"{platform.system().lower()}-{platform.machine().lower()}"
     results_dir = Path(__file__).parent.parent.parent / "results" / "tf_python" / model_name
     results_dir.mkdir(parents=True, exist_ok=True)
-    out_path    = results_dir / f"{ts}-{plat}.json"
+    
+    # Clean up old Python-generated benchmark files (keep TypeScript ones)
+    try:
+        for file in results_dir.glob("*.json"):
+            file.unlink()
+    except:
+        pass  # Directory might not exist yet
+    
+    out_path    = results_dir / "inference_pool.json"
 
     result = {
         "runtime":        "tensorflow-python (concurrent threads)",

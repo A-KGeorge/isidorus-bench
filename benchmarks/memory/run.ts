@@ -28,7 +28,7 @@
  */
 
 import { performance } from "node:perf_hooks";
-import { writeFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, mkdirSync, rmSync, readdirSync } from "node:fs";
 import { join, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import { availableParallelism } from "node:os";
@@ -143,7 +143,7 @@ const pool = await InferencePool.create({
 const resolved = pool.resolvedInputShape;
 const shape = resolved.map((d) => d ?? 1);
 const nElems = shape.reduce((a, b) => a * b, 1);
-const buf = Buffer.from(new Float32Array(nElems).buffer); // reuse same buffer every request
+const buf = new Float32Array(nElems); // reuse same typed array every request
 console.log(
   `  Input shape: ${JSON.stringify(resolved)}  (${nElems} floats, ${nElems * 4} bytes)\n`,
 );
@@ -323,12 +323,24 @@ console.log(
 
 // ── Save results ──────────────────────────────────────────────────────────────
 
-const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
 const modelName = basename(MODEL_PATH).replace(/\.[^/.]+$/, "");
 const outDir = join(REPO_ROOT, "results", "memory", modelName);
 mkdirSync(outDir, { recursive: true });
 
-const filename = `${ts}-${process.platform}-${process.arch}.json`;
+// Clean up old TypeScript-generated benchmark files (those without -python suffix)
+try {
+  const files = readdirSync(outDir);
+  for (const file of files) {
+    if (file.endsWith(".json") && !file.includes("-python")) {
+      const filePath = join(outDir, file);
+      rmSync(filePath);
+    }
+  }
+} catch {
+  // Directory might not exist yet, that's fine
+}
+
+const filename = `memory.json`;
 const result = {
   model: basename(MODEL_PATH),
   inputShape: resolved,
