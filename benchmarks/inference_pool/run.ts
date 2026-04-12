@@ -249,6 +249,7 @@ const tfjsResult = await runTfjsNodePoolBench(
   resolvedShape,
   resolvedInputOp,
   resolvedOutputOp,
+  profile,
 );
 // tfjsResult.durationMs includes the full bench run; loadSavedModel is
 // called inside runTfjsNodePoolBench and its timing is embedded in durationMs.

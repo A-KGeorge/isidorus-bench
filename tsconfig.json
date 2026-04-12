@@ -16,6 +16,12 @@
     "allowJs": true,
     "types": ["node"]
   },
-  "include": ["benchmarks/**/*.ts", "shared/**/*.ts", "bench/**/*.ts", "*.ts"],
+  "include": [
+    "benchmarks/**/*.ts",
+    "shared/**/*.ts",
+    "bench/**/*.ts",
+    "scripts/**/*.ts",
+    "*.ts"
+  ],
   "exclude": ["node_modules", "dist", "results"]
 }

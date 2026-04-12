@@ -409,26 +409,25 @@ def main():
             existing_data = None
 
     if existing_data and isinstance(existing_data, dict) and "results" in existing_data:
-        # This is a suite file, merge results
-        new_suite = {
-            "name": "inference_pool",
-            "description": f"Worker-pool throughput benchmark — {Path(model_path).name}",
-            "results": [result],
-        }
+        # Helper to create a key from runtime and profile (for accumulating different profiles)
+        def get_result_key(res):
+            prof = res.get("profile", "auto")
+            return f"{res.get('runtime')}::{prof}"
         
-        # Build map of existing results by runtime
-        existing_results_map = {r.get("runtime"): r for r in existing_data.get("results", [])}
+        # Merge results: keep all existing results, replace any with matching runtime+profile
+        merged_results = list(existing_data.get("results", []))
         
-        # Replace result for this runtime, keep others
-        merged_results = []
-        for runtime_key, existing_result in existing_results_map.items():
-            if existing_result.get("runtime") == result["runtime"]:
-                merged_results.append(result)
-            else:
-                merged_results.append(existing_result)
+        # Find and replace result with same runtime+profile, or append if new
+        new_key = get_result_key(result)
+        found_idx = None
+        for idx, existing_result in enumerate(merged_results):
+            if get_result_key(existing_result) == new_key:
+                found_idx = idx
+                break
         
-        # Add new result if it's not already included (by runtime)
-        if not any(r.get("runtime") == result["runtime"] for r in merged_results):
+        if found_idx is not None:
+            merged_results[found_idx] = result
+        else:
             merged_results.append(result)
         
         merged_data = {

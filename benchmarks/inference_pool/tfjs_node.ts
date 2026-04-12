@@ -161,6 +161,7 @@ export async function runTfjsNodePoolBench(
   inputShape: number[], // e.g. [1, 224, 224, 3]
   inputOp: string,
   outputOp: string,
+  profile: string = "auto",
 ): Promise<BenchmarkResult | null> {
   let tf: any;
   try {
@@ -262,6 +263,7 @@ export async function runTfjsNodePoolBench(
     runtime: "@tensorflow/tfjs-node (single session, concurrent callers)",
     runtimeVersion: version,
     model: modelPath.split(/[\\/]/).pop() ?? modelPath,
+    profile,
     inputShape,
     warmupIters: WARMUP_REQUESTS,
     benchIters: BENCH_REQUESTS,

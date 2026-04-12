@@ -29,6 +29,7 @@ export interface BenchmarkResult {
   runtime: string; // e.g. "@isidorus/cpu", "@tensorflow/tfjs-node"
   runtimeVersion: string;
   model: string; // human-readable model description
+  profile?: string; // optional profile (e.g. "auto", "latency", "throughput")
   inputShape: number[]; // excluding batch dim
   warmupIters: number;
   benchIters: number;

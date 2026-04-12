@@ -8,7 +8,8 @@
     "bench:pool": "node --import tsx benchmarks/inference_pool/run.ts",
     "bench:memory": "node --expose-gc --import tsx benchmarks/memory/run.ts",
     "bench:memory:quick": "TOTAL_ITERS=1000 node --expose-gc --import tsx benchmarks/memory/run.ts",
-    "bench:all": "node --import tsx benchmarks/run_all.ts"
+    "bench:all": "node --import tsx benchmarks/run_all.ts",
+    "plot": "node --import tsx scripts/plot_results.ts"
   },
   "keywords": [],
   "author": "",
@@ -16,10 +17,14 @@
   "type": "module",
   "dependencies": {
     "@isidorus/core": "^0.0.0-alpha.3",
+    "@isidorus/cpu": "^0.0.0-alpha.11",
     "@tensorflow/tfjs-node": "^4.22.0"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
+    "canvas": "^3.2.3",
+    "chart.js": "^4.5.1",
+    "chartjs-node-canvas": "^5.0.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2"
   }

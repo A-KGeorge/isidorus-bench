@@ -326,31 +326,31 @@ export function mergeResults(options: MergeOptions): BenchmarkSuite {
     return newSuite;
   }
 
-  // Build a map of existing results by runtime name for easy lookup
+  // Helper to create a key from runtime and profile (for accumulating different profiles)
+  const getResultKey = (result: any) => {
+    const prof = result.profile ?? "auto";
+    return `${result.runtime}::${prof}`;
+  };
+
+  // Build a map of existing results by runtime+profile for easy lookup
   const existingResultsMap = new Map(
-    existing.results.map((r) => [r.runtime, r]),
+    existing.results.map((r) => [getResultKey(r), r]),
   );
 
-  // Merge results: replace old results for the same runtime, keep others
-  const mergedResults = [];
+  // Add all new results, replacing any with the same runtime+profile combination
+  const mergedResults = [...existing.results];
 
-  // Add all existing results, replacing those with matching runtime
-  for (const existingResult of existing.results) {
-    const newResult = newSuite.results.find(
-      (r) => r.runtime === existingResult.runtime,
-    );
-    if (newResult) {
-      // Replace with new result for this runtime
-      mergedResults.push(newResult);
-    } else {
-      // Keep existing result if there's no new result for this runtime
-      mergedResults.push(existingResult);
-    }
-  }
-
-  // Add any new results that don't have a corresponding existing result
   for (const newResult of newSuite.results) {
-    if (!existingResultsMap.has(newResult.runtime)) {
+    const key = getResultKey(newResult);
+    const existingIndex = mergedResults.findIndex(
+      (r) => getResultKey(r) === key,
+    );
+
+    if (existingIndex !== -1) {
+      // Replace existing result with same runtime+profile
+      mergedResults[existingIndex] = newResult;
+    } else {
+      // Add new result
       mergedResults.push(newResult);
     }
   }
