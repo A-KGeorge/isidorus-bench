@@ -14,6 +14,32 @@
       "params": 1691464,
       "estimated_fp32_mb": 6.45,
       "description": "MobileNetV2 224x224x3"
+    },
+    "medium": {
+      "frozen_pb": "bench_medium.pb",
+      "savedmodel_dir": null,
+      "input_op": "inputs",
+      "input_shape": [
+        1,
+        224,
+        224,
+        3
+      ],
+      "params": 2058408,
+      "estimated_fp32_mb": 7.85,
+      "description": "ResNet50 224x224x3"
+    },
+    "large": {
+      "frozen_pb": "bench_large.pb",
+      "savedmodel_dir": null,
+      "input_op": "inputs",
+      "input_shape": [
+        1,
+        4096
+      ],
+      "params": 44002280,
+      "estimated_fp32_mb": 167.86,
+      "description": "Dense stack ~44M params"
     }
   }
 }
