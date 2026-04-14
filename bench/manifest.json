@@ -11,8 +11,8 @@
         224,
         3
       ],
-      "params": 1691464,
-      "estimated_fp32_mb": 6.45,
+      "params": 1281000,
+      "estimated_fp32_mb": 4.89,
       "description": "MobileNetV2 224x224x3"
     },
     "medium": {
@@ -25,8 +25,8 @@
         224,
         3
       ],
-      "params": 2058408,
-      "estimated_fp32_mb": 7.85,
+      "params": 2049000,
+      "estimated_fp32_mb": 7.82,
       "description": "ResNet50 224x224x3"
     },
     "large": {

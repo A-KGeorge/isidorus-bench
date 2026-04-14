@@ -110,9 +110,9 @@ function fmtSlope(slope: number): string {
 }
 
 function verdict(slope: number): string {
-  return Math.abs(slope) < LEAK_THRESHOLD_BYTES_PER_ITER
-    ? "✅ CLEAN"
-    : "🚨 LEAK";
+  // Only flag as leak if memory is *growing* past threshold.
+  // Negative slopes (memory reclamation) are always good.
+  return slope < LEAK_THRESHOLD_BYTES_PER_ITER ? "✅ CLEAN" : "🚨 LEAK";
 }
 
 // ── Banner ────────────────────────────────────────────────────────────────────
@@ -285,7 +285,7 @@ console.log(
 );
 
 const isClean = [slopeHeap, slopeExt, slopeRss].every(
-  (s) => Math.abs(s) < LEAK_THRESHOLD_BYTES_PER_ITER,
+  (s) => s < LEAK_THRESHOLD_BYTES_PER_ITER,
 );
 
 console.log(

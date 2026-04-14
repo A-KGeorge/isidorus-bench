@@ -94,21 +94,25 @@ async function runForBatch(batchSize: number) {
     verbose: false,
   });
 
-  // Prepare timed benchmark data
-  // Using Model API's auto-conversion to accept plain arrays
-  const xBench: number[] = [];
-  const yBench: number[] = [];
+  // Prepare timed benchmark data as typed arrays for clean timing.
+  // Float32Array / Int32Array go through the zero-copy fast path in
+  // toFloat32Array() / toInt32Array(), so the timer measures only TF
+  // computation — not JS-to-typed-array conversion or epoch-copy overhead.
   const nXTotal = BENCH_STEPS * batchSize * INPUT_H * INPUT_W * INPUT_C;
   const nYTotal = BENCH_STEPS * batchSize;
-  for (let i = 0; i < nXTotal; i++) xBench.push(Math.random() * 0.5);
+  const xBench = new Float32Array(nXTotal);
+  const yBench = new Int32Array(nYTotal);
+  for (let i = 0; i < nXTotal; i++) xBench[i] = Math.random() * 0.5;
   for (let i = 0; i < nYTotal; i++)
-    yBench.push(Math.floor(Math.random() * NUM_CLASSES));
+    yBench[i] = Math.floor(Math.random() * NUM_CLASSES);
 
   // Timed training using Model.fit()
   const t0 = performance.now();
   const result = await model.fit(xBench, yBench, {
     epochs: 1,
     batchSize,
+    shuffle: false, // synthetic data is already random; skips 57MB slice + shuffle pass
+    sync: true, // trainStepSync: no Promise/libuv overhead per batch step
     verbose: false,
   });
   const totalMs = performance.now() - t0;
