@@ -263,8 +263,16 @@ For each model size (`bench_small`, `bench_medium`, `bench_large`) and profile (
 ### Single-Model Charts
 
 - **`conv2d_throughput.png`** — Images/sec across batch sizes (isidorus vs tfjs-node)
+
+![conv2d throughput](./charts/conv2d_throughput.png)
+
 - **`training_throughput.png`** — Training iterations/sec
+
+![training throughput](./charts/training_throughput.png)
+
 - **`memory_consolidated_comparison.png`** — Stacked bar chart (Heap + External + RSS)
+
+![memory footprint comparison](./charts/memory_consolidated_comparison.png)
 
 ---
 
