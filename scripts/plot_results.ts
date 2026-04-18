@@ -154,26 +154,45 @@ async function plotInferenceComparison(
         labels,
         datasets: Object.entries(runtimes).map(
           ([name, data]: [string, any]) => {
-            let fractions: number[] = [];
+            let blockingRatio: number[] = [];
             if (name === "isidorus") {
-              fractions =
-                data.eventLoopHealth?.map((h: any) => h.stallFraction * 100) ||
+              blockingRatio =
+                data.eventLoopHealth?.map(
+                  (h: any) => ((h.meanStallMs * h.ticks) / h.durationMs) * 100,
+                ) ||
+                data.batches.map((b: any) => {
+                  const el = b.eventLoop;
+                  return el
+                    ? ((el.meanStallMs * el.ticks) / el.durationMs) * 100
+                    : 0;
+                }) ||
                 [];
             } else if (name === "tfjs") {
-              fractions = data.batches.map(
-                (b: any) => (b.eventLoop?.stallFraction || 0) * 100,
-              );
+              blockingRatio = data.batches.map((b: any) => {
+                const el = b.eventLoop;
+                return el
+                  ? ((el.meanStallMs * el.ticks) / el.durationMs) * 100
+                  : 0;
+              });
             } else if (name === "python") {
-              fractions = data.batches.map(
-                (b: any) => (b.gilHealth?.stallFraction || 0) * 100,
-              );
+              blockingRatio =
+                data.gilHealth?.map(
+                  (h: any) => ((h.meanStallMs * h.ticks) / h.durationMs) * 100,
+                ) ||
+                data.batches.map((b: any) => {
+                  const gh = b.gilHealth;
+                  return gh
+                    ? ((gh.meanStallMs * gh.ticks) / gh.durationMs) * 100
+                    : 0;
+                }) ||
+                [];
             }
             return {
               label:
                 name === "python"
-                  ? `${name} (GIL Blocked %)`
-                  : `${name} (Loop Blocked %)`,
-              data: fractions,
+                  ? `${name} (Blocking Ratio β)`
+                  : `${name} (Blocking Ratio β)`,
+              data: blockingRatio,
               borderColor: COLORS[name as keyof typeof COLORS],
               fill: true,
               backgroundColor: COLORS[name as keyof typeof COLORS].replace(
@@ -188,11 +207,11 @@ async function plotInferenceComparison(
         plugins: {
           title: {
             display: true,
-            text: `${model} (${profile}) - Percentage of Time Blocked`,
+            text: `${model} (${profile}) - Blocking Ratio (β) - Cumulative Stall Time %`,
           },
         },
         scales: {
-          y: { min: 0, max: 100, title: { display: true, text: "% Blocked" } },
+          y: { min: 0, title: { display: true, text: "Blocking Ratio β (%)" } },
         },
       },
     },
