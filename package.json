@@ -17,7 +17,7 @@
   "type": "module",
   "dependencies": {
     "@isidorus/core": "^0.0.0-alpha.3",
-    "@isidorus/cpu": "^0.0.0-alpha.28",
+    "@isidorus/cpu": "^0.0.0-alpha.30",
     "@tensorflow/tfjs-node": "^4.22.0"
   },
   "devDependencies": {
