@@ -108,7 +108,9 @@ def discover_io(graph: tf.Graph):
     outputs = [op for op in ops
                if op.type not in ("NoOp", "Assign", "AssignVariableOp")
                and not any(t in all_outputs for t in op.outputs)]
-    return inputs[0].outputs[0], [outputs[-1].outputs[0]]
+    # Return all inputs (sorted by name for consistency) and outputs
+    input_tensors = sorted([op.outputs[0] for op in inputs], key=lambda t: t.name)
+    return input_tensors, [outputs[-1].outputs[0]]
 
 
 def warm_session(sess: tf.Session, feed: dict, fetch):
@@ -173,8 +175,8 @@ AUTOTUNE_INTRA_CANDIDATES = [1, 2, 4, 8, 16, 32]
 
 def autotune(
     graph: tf.Graph,
-    feed_template: np.ndarray,
-    input_tensor,
+    feed_template: dict,
+    input_tensors,
     fetch,
     usable_cores: int,
     uv_cap: int,
@@ -193,7 +195,7 @@ def autotune(
         conc  = min(max(1, usable_cores // intra), uv_cap)
         inter = max(1, min(4, conc))
         sess  = make_session(graph, intra, inter)
-        feed  = {input_tensor: feed_template}
+        feed  = feed_template
 
         warm_session(sess, feed, fetch)
 
@@ -269,22 +271,38 @@ def main():
     graph = load_frozen_graph(model_path)
 
     # Auto-discover I/O
-    input_tensor, fetch = discover_io(graph)
-    raw_shape = input_tensor.shape.as_list()
-    input_shape = [d if d is not None else 1 for d in raw_shape]
-    print(f"  Input: {input_tensor.name}  shape={raw_shape} → {input_shape}")
-
+    input_tensors, fetch = discover_io(graph)
+    
+    # Build feed dict with all inputs
+    feed_template = {}
+    input_shapes = []
     n_elems = 1
-    for d in input_shape:
-        n_elems *= d
-    dummy_input = np.zeros(input_shape, dtype=np.float32)
+    
+    for input_tensor in input_tensors:
+        raw_shape = input_tensor.shape.as_list()
+        input_shape = [d if d is not None else 1 for d in raw_shape]
+        input_shapes.append(input_shape)
+        
+        # Create appropriate input data
+        dummy_input = np.zeros(input_shape, dtype=np.float32)
+        if "int" in str(input_tensor.dtype):
+            dummy_input = dummy_input.astype(np.int32)
+        
+        feed_template[input_tensor] = dummy_input
+        
+        n = 1
+        for d in input_shape:
+            n *= d
+        n_elems += n
+        
+        print(f"  Input: {input_tensor.name}  shape={raw_shape} → {input_shape}  dtype={input_tensor.dtype}")
 
     # ── Thread/concurrency config ──────────────────────────────────────────────
     if profile == "latency":
         intra, maxconcurrent = usable, 1
         inter = 1
         sess  = make_session(graph, intra, inter)
-        warm_session(sess, {input_tensor: dummy_input}, fetch)
+        warm_session(sess, feed_template, fetch)
         print(f"  profile=latency — intra={intra} maxConcurrent=1")
 
     elif profile == "throughput":
@@ -292,20 +310,20 @@ def main():
         maxconcurrent = min(max(1, usable // intra), pool_cap)
         inter = max(1, min(4, maxconcurrent))
         sess  = make_session(graph, intra, inter)
-        warm_session(sess, {input_tensor: dummy_input}, fetch)
+        warm_session(sess, feed_template, fetch)
         print(f"  profile=throughput — intra={intra} maxConcurrent={maxconcurrent}")
 
     else:
         intra, maxconcurrent, sess = autotune(
-            graph, dummy_input, input_tensor, fetch, usable, pool_cap)
+            graph, feed_template, input_tensors, fetch, usable, pool_cap)
         inter = max(1, min(4, maxconcurrent))
 
     cold_start_ms = (time.perf_counter() - cold_start_t0) * 1000.0
     print(f"  Cold start: {cold_start_ms:.0f}ms")
-    print(f"  Inference input: {input_shape}  ({n_elems} floats, {n_elems*4} bytes)")
+    print(f"  Inference inputs: {len(input_tensors)} tensors, total {n_elems} elements ({n_elems*4} bytes)")
     print()
 
-    feed = {input_tensor: dummy_input}
+    feed = feed_template
 
     # One warmup pass at max concurrency
     run_concurrent(sess, feed, fetch, maxconcurrent,
@@ -382,7 +400,7 @@ def main():
             "interOpThreads": inter,
             "maxConcurrent":  maxconcurrent,
         },
-        "inputShape":     input_shape,
+        "inputShapes":    input_shapes,
         "warmupIters":    WARMUP_REQUESTS,
         "benchIters":     BENCH_REQUESTS,
         "batches": [

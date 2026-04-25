@@ -18,6 +18,7 @@ const MODELS = [
   "bench/models/bench_small.pb",
   "bench/models/bench_medium.pb",
   "bench/models/bench_large.pb",
+  "bench/models/bert_model.pb",
 ];
 
 const PROFILES = ["", "latency", "throughput"];

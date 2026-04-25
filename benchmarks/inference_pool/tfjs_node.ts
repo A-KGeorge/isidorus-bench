@@ -109,6 +109,8 @@ async function loadFrozenModel(
 //   long the burst takes. Running synchronously + yielding with setImmediate
 //   after each burst lets the timer correctly record the accumulated stall.
 
+// Replace runConcurrent's input creation and predict call
+
 async function runConcurrent(
   tf: any,
   model: any,
@@ -117,24 +119,62 @@ async function runConcurrent(
   concurrency: number,
   nRequests: number,
 ): Promise<number[]> {
-  const input = tf.randomUniform(inputShape, 0, 1) as any;
   const samples: number[] = [];
+
+  // ── Build inputs from model signature ──────────────────────────────────
+  // For SavedModel with multiple inputs (e.g. BERT), model.inputs is an array
+  // of {name, dtype, shape}. Build a named object so predict() gets all feeds.
+  // For single-input models / graphModel, fall back to the original behaviour.
+  let inputArg: any;
+  let inputsToDispose: any[] = [];
+
+  if (
+    modelType === "savedModel" &&
+    Array.isArray(model.inputs) &&
+    model.inputs.length > 1
+  ) {
+    const namedInputs: Record<string, any> = {};
+    for (const inputInfo of model.inputs) {
+      // FIX: Strip the 'serving_default_' prefix if it exists
+      // The error shows the model wants 'input_ids' but you provided 'serving_default_input_ids'
+      const cleanName = inputInfo.name.replace(/^serving_default_/, "");
+
+      const shape = inputInfo.shape.map((d: any) => {
+        const n = Number(d);
+        return isNaN(n) || n < 1 ? 1 : Math.round(n);
+      });
+      const dtype = inputInfo.dtype ?? "int32";
+      const t =
+        dtype === "int32"
+          ? tf.zeros(shape, "int32")
+          : tf.randomUniform(shape, 0, 1);
+
+      namedInputs[cleanName] = t; // Use the cleaned name here
+      inputsToDispose.push(t);
+    }
+    inputArg = namedInputs;
+  } else {
+    const t = tf.randomUniform(inputShape, 0, 1);
+    inputArg = t;
+    inputsToDispose = [t];
+  }
 
   for (let base = 0; base < nRequests; base += concurrency) {
     const burstSize = Math.min(concurrency, nRequests - base);
     const t0Burst = performance.now();
 
-    // Run synchronously — no Promise wrapper.
-    // Each predict() genuinely blocks the JS event loop for its duration.
-    // The setInterval stall monitor will record the accumulated block time.
     for (let i = 0; i < burstSize; i++) {
       let out: any;
       if (modelType === "graphModel" || modelType === "savedModel") {
-        out = model.predict(input);
+        out = model.predict(inputArg);
       } else {
-        out = model.execute(input);
+        out = model.execute(inputArg);
       }
-      const outputs = Array.isArray(out) ? out : [out];
+      const outputs = Array.isArray(out)
+        ? out
+        : typeof out === "object" && !out.dtype
+          ? Object.values(out) // named output dict (BERT returns {last_hidden_state: ...})
+          : [out];
       outputs.forEach((o: any) => {
         o.dataSync();
         o.dispose();
@@ -142,18 +182,12 @@ async function runConcurrent(
       samples.push(performance.now() - t0Burst);
     }
 
-    // Yield to the macrotask queue after each burst so:
-    //   1. The setInterval callback fires and records the accumulated stall.
-    //   2. The event loop can process any other pending work between bursts.
-    // setImmediate fires before timers but after I/O — the next setInterval
-    // tick will see the full burst stall on the following iteration.
     await new Promise<void>((resolve) => setImmediate(resolve));
   }
 
-  input.dispose();
+  inputsToDispose.forEach((t) => t.dispose());
   return samples;
 }
-
 // ─── Entry point ─────────────────────────────────────────────────────────────
 
 export async function runTfjsNodePoolBench(

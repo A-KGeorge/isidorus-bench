@@ -31,6 +31,7 @@ import { fileURLToPath } from "node:url";
 import { availableParallelism } from "node:os";
 
 import { InferencePool } from "@isidorus/cpu";
+import { DType, dtypeItemSize } from "@isidorus/cpu";
 import {
   computeStats,
   machineInfo,
@@ -123,6 +124,8 @@ let pool0OutputOp: string = "";
 // startup or container restart before it can serve any requests.
 const coldStartT0 = performance.now();
 const pool = await InferencePool.create({ modelPath, profile });
+const inputDtype = pool.resolvedInputDtype;
+const itemSize = dtypeItemSize(inputDtype);
 const coldStartMs = performance.now() - coldStartT0;
 console.log(
   `  Cold start:  ${coldStartMs.toFixed(0)}ms (graph load + session + autotuner + oneDNN warmup)`,
@@ -147,15 +150,15 @@ console.log(
 
 const inferShape = resolvedShape;
 const nElems = inferShape.reduce((a, b) => a * b, 1);
-const inferBuf = new Float32Array(nElems); // use typed array directly, auto-converts
+const inferBuf = Buffer.alloc(nElems * itemSize);
 console.log(
-  `  Inference shape:  ${JSON.stringify(inferShape)}  (${nElems} floats, ${nElems * 4} bytes)`,
+  `  Inference shape:  ${JSON.stringify(inferShape)}  (${nElems} floats, ${nElems * itemSize} bytes)`,
 );
 
 // One warmup pass at max concurrency to stabilise the pool before timing.
 await Promise.all(
   Array.from({ length: WARMUP_REQUESTS }, () =>
-    pool.infer(inferBuf, inferShape, 1),
+    pool.infer(inferBuf, inferShape, inputDtype),
   ),
 );
 
@@ -172,7 +175,7 @@ for (const concurrency of CONCURRENCY_LEVELS) {
     while (issued < BENCH_REQUESTS && inFlight.size < concurrency) {
       const t0 = performance.now();
       let p: Promise<void>;
-      p = pool.infer(inferBuf, inferShape, 1).then(() => {
+      p = pool.infer(inferBuf, inferShape, inputDtype).then(() => {
         samples.push(performance.now() - t0);
         inFlight.delete(p!);
       });
