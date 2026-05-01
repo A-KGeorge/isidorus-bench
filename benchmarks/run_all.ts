@@ -1,7 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { rmSync } from "node:fs";
+import { rmSync, existsSync } from "node:fs";
 
 const ROOT = join(fileURLToPath(import.meta.url), "../..");
 
@@ -23,9 +23,6 @@ const MODELS = [
 
 const PROFILES = ["", "latency", "throughput"];
 
-const pythonCmd = process.platform === "win32" ? "python" : "python3";
-
-// Use Python from venv for all Python benchmarks
 const venvPythonPath =
   process.platform === "win32"
     ? join(ROOT, "myenv", "Scripts", "python.exe")
@@ -40,10 +37,8 @@ function runCommand(
   console.log(`> ${command} ${args.join(" ")}`);
   console.log(`=========================================\n`);
 
-  // Ensure Node commands run without venv activation to avoid affecting output
   const spawnOptions: any = { stdio: "inherit", cwd: ROOT };
   if (isNodeCommand) {
-    // Remove any venv-related environment variables for Node commands
     const cleanEnv = { ...process.env };
     delete cleanEnv.VIRTUAL_ENV;
     delete cleanEnv.CONDA_PREFIX;
@@ -57,22 +52,43 @@ function runCommand(
   }
 }
 
-// 1. Inference Pool (TypeScript)
+// ── Convert .pb models to .onnx for onnxruntime-node ─────────────────────────
+// Only runs if the .onnx doesn't already exist and tf2onnx is available.
+// Failure is non-fatal — run.ts will skip ORT and print a message.
+console.log(
+  "\n── Converting .pb models to .onnx (requires tf2onnx) ────────────────",
+);
+for (const model of MODELS) {
+  const onnxPath = model.replace(/\.pb$/, ".onnx");
+  if (existsSync(join(ROOT, onnxPath))) {
+    console.log(`  Skipping ${onnxPath} (already exists)`);
+    continue;
+  }
+  const result = spawnSync(
+    venvPythonPath,
+    ["bench/convert_to_onnx.py", model],
+    { stdio: "inherit", cwd: ROOT },
+  );
+  if (result.status !== 0) {
+    console.warn(
+      `  ⚠  ONNX conversion failed for ${model} — ORT benchmark will be skipped`,
+    );
+  }
+}
+
+// ── Inference Pool (TypeScript — includes tfjs-node + onnxruntime-node) ──────
 for (const model of MODELS) {
   for (const profile of PROFILES) {
     const args = ["--import", "tsx", "benchmarks/inference_pool/run.ts", model];
-    if (profile) {
-      args.push("--profile", profile);
-    }
+    if (profile) args.push("--profile", profile);
     runCommand("node", args, true);
   }
 }
 
-// Wait for CPU to settle before next suite
 console.log("\nResting for 2 seconds...");
 await new Promise((resolve) => setTimeout(resolve, 2000));
 
-// 3. Memory (TypeScript)
+// ── Memory (TypeScript) ───────────────────────────────────────────────────────
 for (const model of MODELS) {
   runCommand(
     "node",
@@ -81,40 +97,49 @@ for (const model of MODELS) {
   );
 }
 
-// Wait for CPU to settle before next suite
 console.log("\nResting for 2 seconds...");
 await new Promise((resolve) => setTimeout(resolve, 2000));
 
-// 4. Conv2d (TypeScript) (No model size)
+// ── Conv2D (TypeScript) ───────────────────────────────────────────────────────
 runCommand("node", ["--import", "tsx", "benchmarks/conv2d/run.ts"], true);
 
-// Wait for CPU to settle before next suite
 console.log("\nResting for 2 seconds...");
 await new Promise((resolve) => setTimeout(resolve, 2000));
 
-// 5. Training (TypeScript) (No model size)
+// ── Training (TypeScript) ─────────────────────────────────────────────────────
 runCommand("node", ["--import", "tsx", "benchmarks/training/run.ts"], true);
 
-// Wait for CPU to settle before Python tests
 console.log("\nResting for 2 seconds...");
 await new Promise((resolve) => setTimeout(resolve, 2000));
 
-// 2. Inference Pool (Python) - using venv
+// ── Inference Pool — Python threaded baseline ─────────────────────────────────
 for (const model of MODELS) {
   for (const profile of PROFILES) {
     const args = ["benchmarks/inference_pool/run.py", model];
-    if (profile) {
-      args.push("--profile", profile);
-    }
+    if (profile) args.push("--profile", profile);
     runCommand(venvPythonPath, args);
   }
 }
 
-// Wait for CPU to settle before next Python suite
 console.log("\nResting for 2 seconds...");
 await new Promise((resolve) => setTimeout(resolve, 2000));
 
-// 6. Training (Python) (No model size)
+// ── Inference Pool — Python asyncio ──────────────────────────────────────────
+// This is the key new baseline: same TF inference, asyncio event loop instead
+// of raw threads. Measures asyncio event loop responsiveness during inference —
+// the Python equivalent of what isidorus measures for Node.js.
+for (const model of MODELS) {
+  for (const profile of PROFILES) {
+    const args = ["benchmarks/inference_pool/run_asyncio.py", model];
+    if (profile) args.push("--profile", profile);
+    runCommand(venvPythonPath, args);
+  }
+}
+
+console.log("\nResting for 2 seconds...");
+await new Promise((resolve) => setTimeout(resolve, 2000));
+
+// ── Training (Python) ─────────────────────────────────────────────────────────
 runCommand(venvPythonPath, ["benchmarks/training/run.py"]);
 
 console.log("\nAll benchmarks completed successfully!");

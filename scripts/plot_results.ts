@@ -17,12 +17,16 @@ const RUNTIME_MAP: Record<string, string> = {
   "@isidorus/cpu (InferencePool tf-parallel)": "isidorus",
   "@tensorflow/tfjs-node (single session, concurrent callers)": "tfjs",
   "tensorflow-python (concurrent threads)": "python",
+  "onnxruntime-node": "ort",
+  "tensorflow-python (asyncio)": "asyncio",
 };
 
 const COLORS = {
   isidorus: "rgba(54, 162, 235, 1)",
   tfjs: "rgba(255, 159, 64, 1)",
   python: "rgba(75, 192, 192, 1)",
+  ort: "rgba(153, 102, 255, 1)",
+  asyncio: "rgba(255, 99, 132, 1)",
 };
 
 async function main() {
@@ -174,7 +178,14 @@ async function plotInferenceComparison(
                   ? ((el.meanStallMs * el.ticks) / el.durationMs) * 100
                   : 0;
               });
-            } else if (name === "python") {
+            } else if (name === "ort") {
+              blockingRatio = data.batches.map((b: any) => {
+                const el = b.eventLoop;
+                return el
+                  ? ((el.meanStallMs * el.ticks) / el.durationMs) * 100
+                  : 0;
+              });
+            } else if (name === "python" || name === "asyncio") {
               blockingRatio =
                 data.gilHealth?.map(
                   (h: any) => ((h.meanStallMs * h.ticks) / h.durationMs) * 100,
@@ -189,7 +200,7 @@ async function plotInferenceComparison(
             }
             return {
               label:
-                name === "python"
+                name === "python" || name === "asyncio"
                   ? `${name} (Blocking Ratio β)`
                   : `${name} (Blocking Ratio β)`,
               data: blockingRatio,
